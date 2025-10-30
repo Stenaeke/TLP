@@ -1,3 +1,13 @@
 spring:
   application:
     name: Teachers Learning Platform
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://127.0.0.1:5432/
+    username: postgres
+    password: 1234
+  jpa:
+    properties:
+      hibernate:
+        default_schema: tlp
+        show_sql: true
