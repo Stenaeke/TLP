@@ -12,11 +12,11 @@ import lombok.Data;
 public class RegisterRequest {
 
     @NotBlank(message = "First name can't be empty")
-    @Size(max = 255, message = "First name must be less than 255 characters")
+    @Size(min = 1, max = 255, message = "First name must be less than 255 characters")
     private String firstName;
 
     @NotBlank(message = "Last name can't be empty")
-    @Size(max = 255, message = "Last name must be less than 255 characters")
+    @Size(min = 1, max = 255, message = "Last name must be less than 255 characters")
     private String lastName;
 
     @NotBlank(message = "Email name can't be empty")

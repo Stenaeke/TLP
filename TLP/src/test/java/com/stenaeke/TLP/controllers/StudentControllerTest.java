@@ -1,6 +1,7 @@
 package com.stenaeke.TLP.controllers;
 
 import com.stenaeke.TLP.dtos.StudentDTO;
+import com.stenaeke.TLP.dtos.UpdateUserRequest;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -202,6 +203,87 @@ class StudentControllerTest {
 
         //Assert
         assertEquals(HttpStatus.NOT_FOUND, returnedStudent.getStatusCode());
+    }
+
+    @Test
+    @Order(11)
+    @DisplayName("updateStudent returns student with updated data")
+    void testUpdateStudent_whenValidIdAndDetailsGivenInURL_returnUpdatedStudent() throws JSONException {
+        //Arrange
+        String updatedFirstName = "MyNewFirstName";
+        JSONObject updateStudentRequestJson = new JSONObject();
+        updateStudentRequestJson.put("firstName",updatedFirstName);
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(updateStudentRequestJson.toString(), headers);
+
+        System.out.println(requestEntity.getBody().toString());
+
+        //Act
+        ResponseEntity<@NotNull StudentDTO> returnedStudentsResponse = restTemplate.exchange("http://localhost:" + port + "/student/1", HttpMethod.PATCH, requestEntity, StudentDTO.class);
+
+        //Assert
+        assertEquals(HttpStatus.OK, returnedStudentsResponse.getStatusCode());
+        assertNotNull(returnedStudentsResponse.getBody());
+        Assertions.assertEquals(updatedFirstName, returnedStudentsResponse.getBody().getFirstName());
+    }
+
+    @Test
+    @Order(11)
+    @DisplayName("updateStudent with invalid id returns status code 404")
+    void testUpdateStudent_whenInvalidIdAndDetailsGivenInURL_returnUpdatedStudent() throws JSONException {
+        //Arrange
+        String updatedFirstName = "MyNewFirstName";
+        JSONObject updateStudentRequestJson = new JSONObject();
+        updateStudentRequestJson.put("firstName",updatedFirstName);
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(updateStudentRequestJson.toString(), headers);
+
+        System.out.println(requestEntity.getBody().toString());
+
+        //Act
+        ResponseEntity<@NotNull StudentDTO> returnedStudentsResponse = restTemplate.exchange("http://localhost:" + port + "/student/100000000000", HttpMethod.PATCH, requestEntity, StudentDTO.class);
+
+        //Assert
+        assertEquals(HttpStatus.NOT_FOUND, returnedStudentsResponse.getStatusCode());
+    }
+
+    @Test
+    @Order(12)
+    @DisplayName("updateStudent with invalid details returns status code 400")
+    void testUpdateStudent_whenValidIdAndInvalidDetailsGivenInURL_returnUpdatedStudent() throws JSONException {
+        //Arrange
+        String updatedFirstName = "";
+        JSONObject updateStudentRequestJson = new JSONObject();
+        updateStudentRequestJson.put("firstName",updatedFirstName);
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(updateStudentRequestJson.toString(), headers);
+
+        System.out.println(requestEntity.getBody().toString());
+
+        //Act
+        ResponseEntity<@NotNull StudentDTO> returnedStudentsResponse = restTemplate.exchange("http://localhost:" + port + "/student/1", HttpMethod.PATCH, requestEntity, StudentDTO.class);
+
+        //Assert
+        assertEquals(HttpStatus.BAD_REQUEST, returnedStudentsResponse.getStatusCode());
+    }
+
+    @Test
+    @Order(13)
+    @DisplayName("Student can be deleted")
+    void testDeleteStudent_whenValidIdPassed_returnStatusOk(){
+        //Arrange
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+        //Act
+        ResponseEntity<Void> response = restTemplate.exchange(
+                "http://localhost:" + port + "/student/1",
+                HttpMethod.DELETE,
+                requestEntity,
+                Void.class
+        );
+
+        //Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
 }
