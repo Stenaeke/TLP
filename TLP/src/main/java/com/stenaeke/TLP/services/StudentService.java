@@ -39,8 +39,14 @@ public class StudentService {
         return studentMapper.mapToDTO(student);
     }
 
-    public void deleteStudentById(Long id) {
-        studentRepository.deleteById(id);
+    public boolean deleteStudentById(Long id) {
+        var student = studentRepository.findById(id).orElse(null);
+        if (student != null) {
+            studentRepository.delete(student);
+            return true;
+        } else  {
+            return false;
+        }
     }
 
     public StudentDTO updateStudent(Long id, UpdateUserRequest updateRequest) {

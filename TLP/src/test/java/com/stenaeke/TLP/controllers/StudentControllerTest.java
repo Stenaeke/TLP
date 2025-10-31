@@ -272,10 +272,10 @@ class StudentControllerTest {
     @DisplayName("Student can be deleted")
     void testDeleteStudent_whenValidIdPassed_returnStatusOk(){
         //Arrange
-        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+        HttpEntity<?> requestEntity = new HttpEntity<>(headers);
 
         //Act
-        ResponseEntity<Void> response = restTemplate.exchange(
+        ResponseEntity<?> response = restTemplate.exchange(
                 "http://localhost:" + port + "/student/1",
                 HttpMethod.DELETE,
                 requestEntity,
@@ -284,6 +284,25 @@ class StudentControllerTest {
 
         //Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    @Order(14)
+    @DisplayName("deleteStudent with invalid id returns status code 400")
+    void testDeleteStudent_whenInvalidIdPassed_returnStatusNotFound(){
+        //Arrange
+        HttpEntity<?> requestEntity = new HttpEntity<>(headers);
+
+        //Act
+        ResponseEntity<?> response = restTemplate.exchange(
+                "http://localhost:" + port + "/student/10000000000",
+                HttpMethod.DELETE,
+                requestEntity,
+                Void.class
+        );
+
+        //Assert
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
 }
