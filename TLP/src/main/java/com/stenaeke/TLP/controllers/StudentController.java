@@ -1,8 +1,9 @@
 package com.stenaeke.TLP.controllers;
 
-import com.stenaeke.TLP.dtos.RegisterStudentRequest;
+import com.stenaeke.TLP.dtos.RegisterRequest;
 import com.stenaeke.TLP.dtos.StudentDTO;
 import com.stenaeke.TLP.services.StudentService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,7 @@ public class StudentController {
     private final StudentService studentService;
 
     @GetMapping
-    public Iterable<StudentDTO> getStudents() {
+    public Iterable<StudentDTO> getAllStudents() {
         return studentService.getAllStudentsAsDTO();
     }
 
@@ -31,9 +32,9 @@ public class StudentController {
         return ResponseEntity.ok(studentDTO);
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<StudentDTO> createStudent(
-            @RequestBody RegisterStudentRequest registerRequest,
+            @Valid @RequestBody RegisterRequest registerRequest,
             UriComponentsBuilder uriComponentsBuilder
     ) {
 

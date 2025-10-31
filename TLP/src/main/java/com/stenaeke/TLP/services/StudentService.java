@@ -1,7 +1,7 @@
 package com.stenaeke.TLP.services;
 
 import com.stenaeke.TLP.domain.Student;
-import com.stenaeke.TLP.dtos.RegisterStudentRequest;
+import com.stenaeke.TLP.dtos.RegisterRequest;
 import com.stenaeke.TLP.dtos.StudentDTO;
 import com.stenaeke.TLP.mappers.StudentMapper;
 import com.stenaeke.TLP.repositories.StudentRepository;
@@ -21,20 +21,21 @@ public class StudentService {
         return studentRepository.findAll().stream().map(studentMapper::mapToDTO).toList();
     }
 
-    public StudentDTO registerStudent(RegisterStudentRequest registerStudentRequest) {
+    public StudentDTO registerStudent(RegisterRequest registerRequest) {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         Student registeredStudent = new Student();
-        registeredStudent.setFirstName(registerStudentRequest.getFirstName());
-        registeredStudent.setLastName(registerStudentRequest.getLastName());
-        registeredStudent.setEmail(registerStudentRequest.getEmail());
-        registeredStudent.setPasswordHash(passwordEncoder.encode(registerStudentRequest.getPassword()));
+        registeredStudent.setFirstName(registerRequest.getFirstName());
+        registeredStudent.setLastName(registerRequest.getLastName());
+        registeredStudent.setEmail(registerRequest.getEmail());
+        registeredStudent.setPasswordHash(passwordEncoder.encode(registerRequest.getPassword()));
         studentRepository.save(registeredStudent);
 
         return studentMapper.mapToDTO(registeredStudent);
     }
 
     public StudentDTO getStudentById(Long id) {
-        return studentMapper.mapToDTO(studentRepository.findById(id).get());
+        var student = studentRepository.findById(id).orElse(null);
+        return studentMapper.mapToDTO(student);
     }
 
 }
