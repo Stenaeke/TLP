@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/920eec5f-50f1-481e-9a92-fd1eda25ab79/console.sql" value="920eec5f-50f1-481e-9a92-fd1eda25ab79" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/920eec5f-50f1-481e-9a92-fd1eda25ab79/console_1.sql" value="920eec5f-50f1-481e-9a92-fd1eda25ab79" />
+    <file url="file://$PROJECT_DIR$/TLP/src/main/resources/db/migration/V2__create_entity_tables.sql" value="920eec5f-50f1-481e-9a92-fd1eda25ab79" />
+  </component>
+</project>
