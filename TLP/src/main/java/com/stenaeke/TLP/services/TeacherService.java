@@ -10,6 +10,7 @@ import com.stenaeke.TLP.repositories.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,10 +20,12 @@ public class TeacherService {
     private final TeacherMapper teacherMapper;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional(readOnly = true)
     public Iterable<TeacherDto> getAllTeachersAsDTO() {
         return teacherRepository.findAll().stream().map(teacherMapper::mapToDTO).toList();
     }
 
+    @Transactional
     public TeacherDto registerTeacher(RegisterRequest registerRequest) {
         Teacher registeredTeacher = new Teacher();
         registeredTeacher.setFirstName(registerRequest.getFirstName());
@@ -34,11 +37,13 @@ public class TeacherService {
         return teacherMapper.mapToDTO(registeredTeacher);
     }
 
+    @Transactional(readOnly = true)
     public TeacherDto getTeacherById(Long id) {
         var teacher = teacherRepository.findById(id).orElse(null);
         return teacherMapper.mapToDTO(teacher);
     }
 
+    @Transactional
     public boolean deleteTeacherById(Long id) {
         var teacher = teacherRepository.findById(id).orElse(null);
         if (teacher != null) {
@@ -49,6 +54,7 @@ public class TeacherService {
         }
     }
 
+    @Transactional
     public TeacherDto updateTeacher(Long id, UpdateTeacherRequest updateRequest) {
         var teacher = teacherRepository.findById(id).orElse(null);
 

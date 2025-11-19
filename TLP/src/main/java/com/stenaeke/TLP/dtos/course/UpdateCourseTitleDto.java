@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class UpdateCourseTitleDto implements UpdateDto {
+public class UpdateCourseTitleDto implements UpdateCourseDto {
     @NotBlank
     private String title;
 

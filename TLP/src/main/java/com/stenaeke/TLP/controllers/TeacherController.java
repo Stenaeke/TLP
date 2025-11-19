@@ -59,7 +59,7 @@ public class TeacherController {
 
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTeacher(@PathVariable Long id) {
         if(teacherService.deleteTeacherById(id)) {
             return ResponseEntity.ok().build();
