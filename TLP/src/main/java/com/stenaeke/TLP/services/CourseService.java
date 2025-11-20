@@ -76,6 +76,7 @@ public class CourseService {
         course.addSubcategory(subcategory);
 
         courseRepository.save(course);
+        subcategoryRepository.save(subcategory);
         return subcategoryMapper.subcategoryToSubcategoryDto(subcategory);
     }
 

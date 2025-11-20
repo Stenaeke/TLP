@@ -2,6 +2,7 @@ package com.stenaeke.TLP.controllers;
 
 import com.stenaeke.TLP.dtos.course.CourseDto;
 import com.stenaeke.TLP.dtos.auth.TokenResponse;
+import com.stenaeke.TLP.dtos.subcategory.SubcategoryDto;
 import com.stenaeke.TLP.dtos.teacher.TeacherDto;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,6 +33,7 @@ class CourseControllerTest {
     String token;
     String baseUrl;
     JSONObject courseJson;
+    JSONObject subcategoryJson;
 
     @LocalServerPort
     private int port;
@@ -63,6 +65,10 @@ class CourseControllerTest {
         courseJson = new JSONObject();
         courseJson.put("title","Psychology");
         courseJson.put("description","Psychology is the course of Psychology");
+
+        subcategoryJson = new JSONObject();
+        subcategoryJson.put("title","Behavioral psychology");
+        subcategoryJson.put("description","Behavioral psychology is the scientific study of how observable behaviors are learned and influenced by interactions with the environment.");
     }
 
 
@@ -233,6 +239,39 @@ class CourseControllerTest {
 
         //Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("addSubcategory creates subcategory and associates with course and returns status 201")
+    @Order(11)
+    void testAddSubcategory_whenValidDetailsProvided_returnsHttpStatus201() {
+        //Arrange
+        HttpEntity<String> newSubcategoryRequest = new HttpEntity<>(subcategoryJson.toString(), headers);
+
+        HttpEntity<String> courseRequest = new HttpEntity<>(courseJson.toString(), headers);
+        var courseResponse = restTemplate.postForEntity(baseUrl + "/course", courseRequest, CourseDto.class);
+
+        //Act
+        var subcategoryResponse = restTemplate.postForEntity(baseUrl + "/course/2", newSubcategoryRequest, SubcategoryDto.class);
+
+        //Assert
+        assertEquals(HttpStatus.CREATED, subcategoryResponse.getStatusCode());
+        assertEquals(subcategoryResponse.getBody().getCourseId(), courseResponse.getBody().getId());
+    }
+
+    @Test
+    @DisplayName("addSubcategory with empty name returns status 400")
+    @Order(11)
+    void testAddSubcategory_whenEmptyNameProvided_returnsHttpStatus400() throws JSONException {
+        //Arrange
+        subcategoryJson.put("title","");
+        HttpEntity<String> newSubcategoryRequest = new HttpEntity<>(subcategoryJson.toString(), headers);
+
+        //Act
+        var subcategoryResponse = restTemplate.postForEntity(baseUrl + "/course/2", newSubcategoryRequest, SubcategoryDto.class);
+
+        //Assert
+        assertEquals(HttpStatus.BAD_REQUEST, subcategoryResponse.getStatusCode());
     }
 
 }

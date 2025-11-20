@@ -23,7 +23,7 @@ public class Course {
 
     private String description;
 
-    @OneToMany(mappedBy = "course", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},  orphanRemoval = true)
+    @OneToMany(mappedBy = "course", cascade = {CascadeType.ALL},  orphanRemoval = true)
     private Set<Subcategory> subcategories = new LinkedHashSet<>();
 
     public void addSubcategory(Subcategory subcategory){
