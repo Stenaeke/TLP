@@ -96,7 +96,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("The postgresSQL container is running")
-    @Order(0)
+    @Order(1)
     void postgreSQLContainerIsRunning() {
         assertTrue(postgres.isCreated());
         assertTrue(postgres.isRunning());
@@ -106,7 +106,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("add course return status code 201 created")
-    @Order(1)
+    @Order(2)
     void testAddCourse_whenValidDetailsProvided_returnsDtoAndHttpStatus201() {
         //Arrange
 
@@ -121,7 +121,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("add course with empty name return status code 400 bad request")
-    @Order(2)
+    @Order(3)
     void testAddCourse_whenInvalidNameProvided_returnsStatusCode400() throws JSONException {
         //Arrange
         courseJson.put("title","");
@@ -137,7 +137,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("updateCourseTitle updates title and returns status code 200 with updated Dto")
-    @Order(3)
+    @Order(4)
     void testUpdateCourseTitle_whenValidDetailsProvided_returnsDtoAndHttpStatus200() throws JSONException {
         //Arrange
         JSONObject updateJson = new JSONObject();
@@ -154,7 +154,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("updateCourseTitle with empty title returns status code 400")
-    @Order(4)
+    @Order(5)
     void testUpdateCourseTitle_whenEmptyDetailsProvided_returnsHttpStatus400() throws JSONException {
         //Arrange
         JSONObject updateJson = new JSONObject();
@@ -170,7 +170,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("updateCourseDescription updates Description and returns status code 200 with updated Dto")
-    @Order(5)
+    @Order(6)
     void testUpdateCourseDescription_whenValidDetailsProvided_returnsDtoAndHttpStatus200() throws JSONException {
         //Arrange
         JSONObject updateJson = new JSONObject();
@@ -187,7 +187,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("updateCourseDescription with empty Description returns status code 400")
-    @Order(6)
+    @Order(7)
     void testUpdateCourseDescription_whenEmptyDetailsProvided_returnsHttpStatus400() throws JSONException {
         //Arrange
         JSONObject updateJson = new JSONObject();
@@ -202,8 +202,39 @@ class CourseControllerTest {
     }
 
     @Test
+    @DisplayName("getCourse returns course with correct details and status 200")
+    @Order(8)
+    void testGetCourse_whenValidCourseId_returnsCourseDtoWithHttpStatus200() {
+        //Arrange
+        HttpEntity<String> getCourseRequest = new HttpEntity<>(headers);
+
+        //Act
+        var response = restTemplate.exchange(baseUrl + "/course/1", HttpMethod.GET, getCourseRequest, CourseDto.class
+        );
+
+        //Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().getId());
+    }
+
+    @Test
+    @DisplayName("getCourse returns 404 when course not found")
+    @Order(9)
+    void testGetCourse_whenInvalidCourseId_returnsHttpStatus404() {
+        //Arrange
+        HttpEntity<String> getCourseRequest = new HttpEntity<>(headers);
+
+        //Act
+        var response = restTemplate.exchange(baseUrl + "/course/9999", HttpMethod.GET, getCourseRequest, CourseDto.class
+        );
+
+        //Assert
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
     @DisplayName("Get all courses returns correct amount of courses")
-    @Order(7)
+    @Order(10)
     void testGetAllCourses_whenGetRequest_returnsCorrectAmountOfCoursesWithHttpStatus200() {
         //Arrange
 
@@ -218,7 +249,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("deleteCourse with non-existing course and returns status 400")
-    @Order(8)
+    @Order(11)
     void testDeleteCourse_whenInvalidDetailsProvided_returnsHttpStatus200() {
         //Arrange
         HttpEntity<String> deleteRequest = new HttpEntity<>(headers);
@@ -232,7 +263,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("deleteCourse deletes course and returns status 200")
-    @Order(9)
+    @Order(12)
     void testDeleteCourse_whenValidDetailsProvided_returnsHttpStatus200() {
         //Arrange
         HttpEntity<String> deleteRequest = new HttpEntity<>(headers);
@@ -247,7 +278,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("addSubcategory creates subcategory and associates with course and returns status 201")
-    @Order(10)
+    @Order(13)
     void testAddSubcategory_whenValidDetailsProvided_returnsHttpStatus201() throws JSONException {
         //Arrange
         HttpEntity<String> newSubcategoryRequest = new HttpEntity<>(subcategoryJson.toString(), headers);
@@ -267,7 +298,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("addSubcategory with empty name returns status 400")
-    @Order(11)
+    @Order(14)
     void testAddSubcategory_whenEmptyNameProvided_returnsHttpStatus400() throws JSONException {
         //Arrange
         subcategoryJson.put("title","");
@@ -282,7 +313,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("getSubcategoriesForCourse returns correct number of subcategories for given course with status 200")
-    @Order(12)
+    @Order(15)
     void testGetSubcategoriesForCourse_whenGetRequest_returnsCorrectNumberOfSubcategoriesWithHttpStatus200() {
         //Arrange
         HttpEntity<String> getSubcategoriesRequest = new HttpEntity<>(headers);
@@ -297,7 +328,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("getSubcategoriesForCourse returns correct subcategories for given course with status 200")
-    @Order(13)
+    @Order(16)
     void testGetSubcategoriesForCourse_whenGetRequest_returnsCorrectSubcategoriesWithHttpStatus200() throws JSONException {
         //Arrange
         HttpEntity<String> getSubcategoriesRequest = new HttpEntity<>(headers);
@@ -312,7 +343,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("getSubcategory returns requested subcategory with status 200")
-    @Order(14)
+    @Order(17)
     void testGetSubcategory_whenValidDetailsProvided_returnsHttpStatus200() throws JSONException {
         //Arrange
         HttpEntity<String> newSubcategoryRequest = new HttpEntity<>(headers);
@@ -327,7 +358,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("getSubcategory with invalid id returns 404 status")
-    @Order(15)
+    @Order(18)
     void testGetSubcategory_whenInvalidIdProvided_returnsHttpStatus404() throws JSONException {
         //Arrange
         HttpEntity<String> newSubcategoryRequest = new HttpEntity<>(headers);
@@ -341,7 +372,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("updateSubcategoryTitle with valid new title updates and returns updated subcategory dto with status code 200")
-    @Order(16)
+    @Order(19)
     void testUpdateSubcategoryTitle_whenValidDetailsProvided_returnsHttpStatus200() throws JSONException {
         //Arrange
         JSONObject updatedSubcategoryJson = new JSONObject();
@@ -359,7 +390,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("updateSubcategoryTitle with invalid new title updates and returns status 400")
-    @Order(17)
+    @Order(20)
     void testUpdateSubcategoryTitle_whenInvalidDetailsProvided_returnsHttpStatus400() throws JSONException {
         //Arrange
         JSONObject updatedSubcategoryJson = new JSONObject();
@@ -376,7 +407,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("updateSubcategoryTitle with invalid subcategory id returns status 404")
-    @Order(18)
+    @Order(21)
     void testUpdateSubcategoryTitle_whenInvalidSubcategoryId_returnsHttpStatus404() throws JSONException {
         //Arrange
         JSONObject updatedSubcategoryJson = new JSONObject();
@@ -393,7 +424,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("updateSubcategoryTitle with invalid course id returns status 404")
-    @Order(19)
+    @Order(22)
     void testUpdateSubcategoryTitle_whenInvalidCourseId_returnsHttpStatus404() throws JSONException {
         //Arrange
         JSONObject updatedSubcategoryJson = new JSONObject();
@@ -410,7 +441,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("updateSubcategoryDescription returns updated subcategory with status 200")
-    @Order(20)
+    @Order(23)
     void testUpdateSubcategoryDescription_whenValidDetailsProvided_returnsHttpStatus200() throws JSONException {
         //Arrange
         JSONObject updatedSubcategoryJson = new JSONObject();
@@ -428,7 +459,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("updateSubcategoryCourse returns updated subcategory with status 200")
-    @Order(21)
+    @Order(24)
     void testUpdateSubcategoryCourse_whenValidDetailsProvided_returnsHttpStatus200() throws JSONException {
         //Arrange
         courseJson.put("title", "Another Course");
@@ -451,7 +482,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("updateSubcategoryCourse with invalid new course id returns status 404")
-    @Order(22)
+    @Order(25)
     void testUpdateSubcategoryCourse_whenInvalidNewCourseDetailsProvided_returnsHttpStatus200() throws JSONException {
         //Arrange
 
@@ -469,7 +500,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("updateSubcategoryCourse with invalid course id returns status 404")
-    @Order(23)
+    @Order(26)
     void testUpdateSubcategoryCourse_whenInvalidCourseDetailsProvided_returnsHttpStatus200() throws JSONException {
         //Arrange
         JSONObject updatedSubcategoryJson = new JSONObject();
@@ -486,7 +517,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("updateSubcategoryCourse with invalid subcategory id returns status 404")
-    @Order(24)
+    @Order(27)
     void testUpdateSubcategoryCourse_whenInvalidSubcategoryDetailsProvided_returnsHttpStatus200() throws JSONException {
         //Arrange
         JSONObject updatedSubcategoryJson = new JSONObject();
@@ -503,7 +534,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("deleteSubcategory with non-existing subcategory id returns 404")
-    @Order(25)
+    @Order(28)
     void testDeleteSubcategory_whenInvalidDetailsProvided_returnsHttpStatus404() {
         //Arrange
         HttpEntity<String> deleteSubcategoryRequest = new HttpEntity<>(headers);
@@ -517,7 +548,7 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("deleteSubcategory deletes subcategory and returns 200")
-    @Order(25)
+    @Order(29)
     void testDeleteSubcategory_whenValidDetailsProvided_returnsHttpStatus200() {
         //Arrange
         HttpEntity<String> deleteSubcategoryRequest = new HttpEntity<>(headers);
