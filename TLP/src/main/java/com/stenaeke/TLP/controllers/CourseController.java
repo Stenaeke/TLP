@@ -4,12 +4,8 @@ import com.stenaeke.TLP.dtos.course.CreateCourseDto;
 import com.stenaeke.TLP.dtos.course.CourseDto;
 import com.stenaeke.TLP.dtos.course.UpdateCourseDescriptionDto;
 import com.stenaeke.TLP.dtos.course.UpdateCourseTitleDto;
-import com.stenaeke.TLP.dtos.subcategory.CreateSubcategoryRequest;
-import com.stenaeke.TLP.dtos.subcategory.SubcategoryDto;
-import com.stenaeke.TLP.dtos.subcategory.UpdateSubcategoryDto;
+import com.stenaeke.TLP.dtos.subcategory.*;
 import com.stenaeke.TLP.exceptions.ResourceNotFoundException;
-import com.stenaeke.TLP.mappers.CourseMapper;
-import com.stenaeke.TLP.mappers.SubcategoryMapper;
 import com.stenaeke.TLP.services.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/course")
@@ -27,6 +22,8 @@ import java.util.stream.Collectors;
 public class CourseController {
 
     private final CourseService courseService;
+
+    //-----------Course endpoints---------------//
 
     @GetMapping
     public ResponseEntity<List<CourseDto>> getAllCourses(){
@@ -106,6 +103,8 @@ public class CourseController {
         }
     }
 
+    //-----------Subcategory endpoints---------------//
+
     @GetMapping("/{courseId}/subcategories")
     public ResponseEntity<List<SubcategoryDto>> getSubcategoriesForCourse(@PathVariable int courseId){
         try {
@@ -128,8 +127,8 @@ public class CourseController {
         }
     }
 
-    @PostMapping("/{courseId}/subcategories/{subcategoryId}")
-    public ResponseEntity<SubcategoryDto> updateSubcategory(@PathVariable int courseId, @PathVariable int subcategoryId, @RequestBody @Valid UpdateSubcategoryDto updateSubcategoryDto ){
+    @PutMapping("/{courseId}/subcategories/{subcategoryId}/title")
+    public ResponseEntity<SubcategoryDto> updateSubcategoryTitle(@PathVariable int courseId, @PathVariable int subcategoryId, @RequestBody @Valid UpdateSubcategoryTitle updateSubcategoryDto ){
         try {
             var updatedSubcategoryDto = courseService.updateSubcategory(courseId, subcategoryId, updateSubcategoryDto);
             return ResponseEntity.ok(updatedSubcategoryDto);
@@ -138,7 +137,27 @@ public class CourseController {
         }
     }
 
-    @DeleteMapping("{courseId}/subcategories/{subcategoryId}")
+    @PutMapping("/{courseId}/subcategories/{subcategoryId}/description")
+    public ResponseEntity<SubcategoryDto> updateSubcategoryDescription(@PathVariable int courseId, @PathVariable int subcategoryId, @RequestBody @Valid UpdateSubcategoryDescription updateSubcategoryDto ){
+        try {
+            var updatedSubcategoryDto = courseService.updateSubcategory(courseId, subcategoryId, updateSubcategoryDto);
+            return ResponseEntity.ok(updatedSubcategoryDto);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping("/{courseId}/subcategories/{subcategoryId}/course")
+    public ResponseEntity<SubcategoryDto> updateSubcategoryCourse(@PathVariable int courseId, @PathVariable int subcategoryId, @RequestBody @Valid UpdateSubcategoryCourse updateSubcategoryDto ){
+        try {
+            var updatedSubcategoryDto = courseService.updateSubcategoryCourse(courseId, subcategoryId, updateSubcategoryDto);
+            return ResponseEntity.ok(updatedSubcategoryDto);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/{courseId}/subcategories/{subcategoryId}")
     public ResponseEntity<?> deleteSubcategory(@PathVariable int courseId, @PathVariable int subcategoryId){
         try {
             courseService.deleteSubcategory(courseId, subcategoryId);

@@ -5,6 +5,7 @@ import com.stenaeke.TLP.domain.Subcategory;
 import com.stenaeke.TLP.dtos.course.*;
 import com.stenaeke.TLP.dtos.subcategory.CreateSubcategoryRequest;
 import com.stenaeke.TLP.dtos.subcategory.SubcategoryDto;
+import com.stenaeke.TLP.dtos.subcategory.UpdateSubcategoryCourse;
 import com.stenaeke.TLP.dtos.subcategory.UpdateSubcategoryDto;
 import com.stenaeke.TLP.exceptions.ResourceNotFoundException;
 import com.stenaeke.TLP.mappers.CourseMapper;
@@ -14,7 +15,6 @@ import com.stenaeke.TLP.repositories.SubcategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,13 +44,15 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public CourseDto getCourse(int courseId) {
-        var course = courseRepository.findById(courseId).orElseThrow(()-> new ResourceNotFoundException("course not found"));
+        var course = courseRepository.findById(courseId)
+                .orElseThrow(()-> new ResourceNotFoundException("course not found"));
         return courseMapper.courseToCourseDto(course);
     }
 
     @Transactional
     public CourseDto updateCourse(UpdateCourseDto updateCourseDto, int id) {
-        var course = courseRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("course not found"));
+        var course = courseRepository.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("course not found"));
 
         updateCourseDto.applyToCourse(course);
         courseRepository.save(course);
@@ -68,7 +70,8 @@ public class CourseService {
 
     @Transactional
     public SubcategoryDto addSubcategoryToCourse(int courseId, CreateSubcategoryRequest createSubcategoryRequest) {
-        Course course = courseRepository.findById(courseId).orElseThrow(()-> new ResourceNotFoundException("course not found"));
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(()-> new ResourceNotFoundException("course not found"));
 
         Subcategory subcategory = new Subcategory();
         subcategory.setTitle(createSubcategoryRequest.getTitle());
@@ -76,30 +79,34 @@ public class CourseService {
         course.addSubcategory(subcategory);
 
         courseRepository.save(course);
-        subcategoryRepository.save(subcategory);
         return subcategoryMapper.subcategoryToSubcategoryDto(subcategory);
     }
 
     @Transactional(readOnly = true)
     public List<SubcategoryDto> getAllSubcategoriesForCourse(int courseId) {
-        var course =  courseRepository.findById(courseId).orElseThrow(()-> new ResourceNotFoundException("course not found"));
+        var course =  courseRepository.findById(courseId)
+                .orElseThrow(()-> new ResourceNotFoundException("course not found"));
 
         return course.getSubcategories().stream().map(subcategoryMapper::subcategoryToSubcategoryDto).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public SubcategoryDto getSubcategory(int courseId, int subcategoryId) {
-        var course = courseRepository.findById(courseId).orElseThrow(()-> new ResourceNotFoundException("course not found"));
+        var course = courseRepository.findById(courseId)
+                .orElseThrow(()-> new ResourceNotFoundException("course not found"));
 
         return course.getSubcategories().stream().filter(subcategory ->
                 subcategory.getId() == subcategoryId).findFirst().
-                map(subcategoryMapper::subcategoryToSubcategoryDto).orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
+                map(subcategoryMapper::subcategoryToSubcategoryDto)
+                .orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
     }
 
     @Transactional
     public SubcategoryDto updateSubcategory(int courseId, int subcategoryId, UpdateSubcategoryDto updateSubcategoryDto) {
-        var course =  courseRepository.findById(courseId).orElseThrow(()-> new ResourceNotFoundException("course not found"));
-        var subcategory = subcategoryRepository.findById(subcategoryId).orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
+        var course =  courseRepository.findById(courseId)
+                .orElseThrow(()-> new ResourceNotFoundException("course not found"));
+        var subcategory = subcategoryRepository.findById(subcategoryId)
+                .orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
 
         updateSubcategoryDto.applyToSubcategory(subcategory);
         courseRepository.save(course);
@@ -107,9 +114,31 @@ public class CourseService {
     }
 
     @Transactional
+    public SubcategoryDto updateSubcategoryCourse(int courseId, int subcategoryId, UpdateSubcategoryCourse updateSubcategoryDto) {
+        var currentCourse = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("current course not found"));
+
+        var newCourse = courseRepository.findById(updateSubcategoryDto.getCourseId())
+                .orElseThrow(() -> new ResourceNotFoundException("new course not found"));
+
+        var subcategory = subcategoryRepository.findById(subcategoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("subcategory not found"));
+
+        currentCourse.removeSubcategory(subcategory);
+        newCourse.addSubcategory(subcategory);
+
+        courseRepository.save(currentCourse);
+        courseRepository.save(newCourse);
+
+        return subcategoryMapper.subcategoryToSubcategoryDto(subcategory);
+    }
+
+    @Transactional
     public void deleteSubcategory(int courseId, int subcategoryId) {
-        var course = courseRepository.findById(courseId).orElseThrow(()-> new ResourceNotFoundException("course not found"));
-        var subcategory = subcategoryRepository.findById(subcategoryId).orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
+        var course = courseRepository.findById(courseId)
+                .orElseThrow(()-> new ResourceNotFoundException("course not found"));
+        var subcategory = subcategoryRepository.findById(subcategoryId)
+                .orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
 
         course.removeSubcategory(subcategory);
         subcategoryRepository.delete(subcategory);

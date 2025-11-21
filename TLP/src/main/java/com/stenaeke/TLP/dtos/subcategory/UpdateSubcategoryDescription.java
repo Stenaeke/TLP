@@ -1,12 +1,14 @@
 package com.stenaeke.TLP.dtos.subcategory;
 
 import com.stenaeke.TLP.domain.Subcategory;
+import lombok.Data;
 
+@Data
 public class UpdateSubcategoryDescription implements UpdateSubcategoryDto {
-    private String Description;
+    private String description;
 
     @Override
     public void applyToSubcategory(Subcategory subcategory) {
-        subcategory.setDescription(Description);
+        subcategory.setDescription(description);
     }
 }
