@@ -21,7 +21,7 @@ public class CourseController {
 
     private final CourseService courseService;
 
-    //-----------Course endpoints---------------//
+    //---------------Course endpoints---------------//
 
     @GetMapping
     public ResponseEntity<List<CourseDto>> getAllCourses(){
@@ -63,7 +63,7 @@ public class CourseController {
         return ResponseEntity.noContent().build();
     }
 
-    //-----------Subcategory endpoints---------------//
+    //---------------Subcategory endpoints---------------//
 
     @PostMapping("/{courseId}/subcategories")
     public ResponseEntity<SubcategoryDto> addSubcategory(@PathVariable Long courseId,

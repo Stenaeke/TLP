@@ -33,4 +33,6 @@ public class Module {
 
     private OffsetDateTime updatedAt;
 
+    private Boolean published;
+
 }

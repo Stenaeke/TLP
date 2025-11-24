@@ -71,7 +71,7 @@ public class CourseService {
 
     }
 
-    //-------Subcategory methods-------//
+    //---------------Subcategory methods---------------//
 
     @Transactional
     public SubcategoryDto addSubcategoryToCourse(Long courseId, CreateSubcategoryRequest createSubcategoryRequest) {
@@ -166,7 +166,7 @@ public class CourseService {
         }
     }
 
-    //-------Module methods-------//
+    //---------------Module methods---------------//
 
     @Transactional(readOnly = true)
     public List<SubcategoryDto> getAllModulesForSubcategory(Long courseId, Long subcategoryId) {
