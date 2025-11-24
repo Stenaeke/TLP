@@ -5,11 +5,9 @@ import com.stenaeke.TLP.dtos.course.CourseDto;
 import com.stenaeke.TLP.dtos.course.UpdateCourseDescriptionDto;
 import com.stenaeke.TLP.dtos.course.UpdateCourseTitleDto;
 import com.stenaeke.TLP.dtos.subcategory.*;
-import com.stenaeke.TLP.exceptions.ResourceNotFoundException;
 import com.stenaeke.TLP.services.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -27,25 +25,14 @@ public class CourseController {
 
     @GetMapping
     public ResponseEntity<List<CourseDto>> getAllCourses(){
-
-        try {
-            var courseDtos = courseService.getAllCourses();
-            if(courseDtos.isEmpty())
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            return ResponseEntity.ok(courseDtos);
-        } catch (ResourceNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        var courseDtos = courseService.getAllCourses();
+        return ResponseEntity.ok(courseDtos);
     }
 
     @GetMapping("/{courseId}")
-    public ResponseEntity<CourseDto> getCourse(@PathVariable("courseId") int courseId){
-        try {
-            var courseDto = courseService.getCourse(courseId);
-            return ResponseEntity.ok(courseDto);
-        } catch (ResourceNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<CourseDto> getCourse(@PathVariable Long courseId){
+        var courseDto = courseService.getCourse(courseId);
+        return ResponseEntity.ok(courseDto);
     }
 
     @PostMapping
@@ -59,111 +46,69 @@ public class CourseController {
     }
 
     @PutMapping("/{courseId}/title")
-    public ResponseEntity<CourseDto> updateCourseTitle(@Valid @RequestBody UpdateCourseTitleDto updateCourseTitleDto, @PathVariable int courseId){
-        try {
-            return ResponseEntity.ok(courseService.updateCourse(updateCourseTitleDto, courseId));
-        } catch (ResourceNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<CourseDto> updateCourseTitle(@PathVariable Long courseId,
+                                                       @Valid @RequestBody UpdateCourseTitleDto updateCourseTitleDto){
+        return ResponseEntity.ok(courseService.updateCourse(updateCourseTitleDto, courseId));
     }
 
     @PutMapping("/{courseId}/description")
-    public ResponseEntity<CourseDto> updateCourseDescription(@Valid @RequestBody UpdateCourseDescriptionDto updateCourseDescriptionDto, @PathVariable int courseId){
-        try {
-            return ResponseEntity.ok(courseService.updateCourse(updateCourseDescriptionDto, courseId));
-        } catch (ResourceNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<CourseDto> updateCourseDescription(@PathVariable Long courseId,
+                                                             @Valid @RequestBody UpdateCourseDescriptionDto updateCourseDescriptionDto){
+        return ResponseEntity.ok(courseService.updateCourse(updateCourseDescriptionDto, courseId));
     }
 
     @DeleteMapping("/{courseId}")
-    public ResponseEntity<?> deleteCourse(@PathVariable int courseId){
-        try {
-            courseService.deleteCourse(courseId);
-            return ResponseEntity.ok().build();
-        } catch (
-                ResourceNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-    }
-
-    @PostMapping("/{courseId}")
-    public ResponseEntity<?> addSubcategory(@PathVariable int courseId,
-                                             @Valid @RequestBody CreateSubcategoryRequest createSubcategoryRequest,
-                                             UriComponentsBuilder uriComponentsBuilder
-    ) {
-        try {
-            var subcategoryDto = courseService.addSubcategoryToCourse(courseId, createSubcategoryRequest);
-            var uri = uriComponentsBuilder.path("/course/{courseId}/").buildAndExpand(subcategoryDto.getId()).toUri();
-            return ResponseEntity.created(uri).body(subcategoryDto);
-
-        } catch (ResourceNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Void> deleteCourse(@PathVariable Long courseId){
+        courseService.deleteCourse(courseId);
+        return ResponseEntity.noContent().build();
     }
 
     //-----------Subcategory endpoints---------------//
 
+    @PostMapping("/{courseId}/subcategories")
+    public ResponseEntity<SubcategoryDto> addSubcategory(@PathVariable Long courseId,
+                                                         @Valid @RequestBody CreateSubcategoryRequest createSubcategoryRequest,
+                                                         UriComponentsBuilder uriComponentsBuilder
+    ) {
+        var subcategoryDto = courseService.addSubcategoryToCourse(courseId, createSubcategoryRequest);
+        var uri = uriComponentsBuilder.path("/course/{courseId}/subcategories/{subcategoryId}").buildAndExpand(courseId, subcategoryDto.getId()).toUri();
+        return ResponseEntity.created(uri).body(subcategoryDto);
+    }
+
     @GetMapping("/{courseId}/subcategories")
-    public ResponseEntity<List<SubcategoryDto>> getSubcategoriesForCourse(@PathVariable int courseId){
-        try {
-            var subcategoryDtos = courseService.getAllSubcategoriesForCourse(courseId);
-            if(subcategoryDtos.isEmpty())
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            return ResponseEntity.ok(subcategoryDtos);
-        } catch (ResourceNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<List<SubcategoryDto>> getSubcategoriesForCourse(@PathVariable Long courseId){
+        var subcategoryDtos = courseService.getAllSubcategoriesForCourse(courseId);
+        return ResponseEntity.ok(subcategoryDtos);
     }
 
     @GetMapping("/{courseId}/subcategories/{subcategoryId}")
-    public ResponseEntity<SubcategoryDto> getSubcategory(@PathVariable int courseId, @PathVariable int subcategoryId){
-        try {
-            var subcategoryDto = courseService.getSubcategory(courseId, subcategoryId);
-            return ResponseEntity.ok(subcategoryDto);
-        } catch (ResourceNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<SubcategoryDto> getSubcategory(@PathVariable Long courseId, @PathVariable Long subcategoryId){
+        var subcategoryDto = courseService.getSubcategory(courseId, subcategoryId);
+        return ResponseEntity.ok(subcategoryDto);
     }
 
     @PutMapping("/{courseId}/subcategories/{subcategoryId}/title")
-    public ResponseEntity<SubcategoryDto> updateSubcategoryTitle(@PathVariable int courseId, @PathVariable int subcategoryId, @RequestBody @Valid UpdateSubcategoryTitle updateSubcategoryDto ){
-        try {
-            var updatedSubcategoryDto = courseService.updateSubcategory(courseId, subcategoryId, updateSubcategoryDto);
-            return ResponseEntity.ok(updatedSubcategoryDto);
-        } catch (ResourceNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<SubcategoryDto> updateSubcategoryTitle(@PathVariable Long courseId, @PathVariable Long subcategoryId, @Valid @RequestBody UpdateSubcategoryTitle updateSubcategoryDto){
+        var updatedSubcategoryDto = courseService.updateSubcategory(courseId, subcategoryId, updateSubcategoryDto);
+        return ResponseEntity.ok(updatedSubcategoryDto);
     }
 
     @PutMapping("/{courseId}/subcategories/{subcategoryId}/description")
-    public ResponseEntity<SubcategoryDto> updateSubcategoryDescription(@PathVariable int courseId, @PathVariable int subcategoryId, @RequestBody @Valid UpdateSubcategoryDescription updateSubcategoryDto ){
-        try {
-            var updatedSubcategoryDto = courseService.updateSubcategory(courseId, subcategoryId, updateSubcategoryDto);
-            return ResponseEntity.ok(updatedSubcategoryDto);
-        } catch (ResourceNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<SubcategoryDto> updateSubcategoryDescription(@PathVariable Long courseId, @PathVariable Long subcategoryId, @Valid @RequestBody UpdateSubcategoryDescription updateSubcategoryDto){
+        var updatedSubcategoryDto = courseService.updateSubcategory(courseId, subcategoryId, updateSubcategoryDto);
+        return ResponseEntity.ok(updatedSubcategoryDto);
     }
 
     @PutMapping("/{courseId}/subcategories/{subcategoryId}/course")
-    public ResponseEntity<SubcategoryDto> updateSubcategoryCourse(@PathVariable int courseId, @PathVariable int subcategoryId, @RequestBody @Valid UpdateSubcategoryCourse updateSubcategoryDto ){
-        try {
-            var updatedSubcategoryDto = courseService.updateSubcategoryCourse(courseId, subcategoryId, updateSubcategoryDto);
-            return ResponseEntity.ok(updatedSubcategoryDto);
-        } catch (ResourceNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<SubcategoryDto> updateSubcategoryCourse(@PathVariable Long courseId, @PathVariable Long subcategoryId, @Valid @RequestBody UpdateSubcategoryCourse updateSubcategoryDto){
+        var updatedSubcategoryDto = courseService.updateSubcategoryCourse(courseId, subcategoryId, updateSubcategoryDto);
+        return ResponseEntity.ok(updatedSubcategoryDto);
     }
 
     @DeleteMapping("/{courseId}/subcategories/{subcategoryId}")
-    public ResponseEntity<?> deleteSubcategory(@PathVariable int courseId, @PathVariable int subcategoryId){
-        try {
-            courseService.deleteSubcategory(courseId, subcategoryId);
-            return ResponseEntity.ok().build();
-        } catch (ResourceNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Void> deleteSubcategory(@PathVariable Long courseId, @PathVariable Long subcategoryId){
+        courseService.deleteSubcategory(courseId, subcategoryId);
+        return ResponseEntity.noContent().build();
     }
+
 }

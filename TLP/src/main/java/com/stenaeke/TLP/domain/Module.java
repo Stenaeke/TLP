@@ -19,7 +19,7 @@ public class Module {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "module_id")
-    private int id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "subcategory_id")

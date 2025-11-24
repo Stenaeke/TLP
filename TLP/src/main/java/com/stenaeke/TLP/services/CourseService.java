@@ -7,6 +7,7 @@ import com.stenaeke.TLP.dtos.subcategory.CreateSubcategoryRequest;
 import com.stenaeke.TLP.dtos.subcategory.SubcategoryDto;
 import com.stenaeke.TLP.dtos.subcategory.UpdateSubcategoryCourse;
 import com.stenaeke.TLP.dtos.subcategory.UpdateSubcategoryDto;
+import com.stenaeke.TLP.exceptions.ResourceMismatchException;
 import com.stenaeke.TLP.exceptions.ResourceNotFoundException;
 import com.stenaeke.TLP.mappers.CourseMapper;
 import com.stenaeke.TLP.mappers.SubcategoryMapper;
@@ -27,6 +28,8 @@ public class CourseService {
     private final CourseMapper courseMapper;
     private final SubcategoryMapper subcategoryMapper;
 
+    //-------Course methods-------//
+
     @Transactional(readOnly = true)
     public List<CourseDto> getAllCourses(){
         return courseRepository.findAll().stream().map(courseMapper::courseToCourseDto).collect(Collectors.toList());
@@ -39,38 +42,40 @@ public class CourseService {
         course.setDescription(createCourseDto.getDescription());
         courseRepository.save(course);
 
-        return (courseMapper.courseToCourseDto(course));
+        return courseMapper.courseToCourseDto(course);
     }
 
     @Transactional(readOnly = true)
-    public CourseDto getCourse(int courseId) {
+    public CourseDto getCourse(Long courseId) {
         var course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new ResourceNotFoundException("course not found"));
         return courseMapper.courseToCourseDto(course);
     }
 
     @Transactional
-    public CourseDto updateCourse(UpdateCourseDto updateCourseDto, int id) {
+    public CourseDto updateCourse(UpdateCourseDto updateCourseDto, Long id) {
         var course = courseRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("course not found"));
 
         updateCourseDto.applyToCourse(course);
         courseRepository.save(course);
 
-        return (courseMapper.courseToCourseDto(course));
+        return courseMapper.courseToCourseDto(course);
     }
 
     @Transactional
-    public void deleteCourse(int id) {
+    public void deleteCourse(Long id) {
         var course =  courseRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("course not found"));
         courseRepository.delete(course);
 
     }
 
+    //-------Subcategory methods-------//
+
     @Transactional
-    public SubcategoryDto addSubcategoryToCourse(int courseId, CreateSubcategoryRequest createSubcategoryRequest) {
-        Course course = courseRepository.findById(courseId)
+    public SubcategoryDto addSubcategoryToCourse(Long courseId, CreateSubcategoryRequest createSubcategoryRequest) {
+        var course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new ResourceNotFoundException("course not found"));
 
         Subcategory subcategory = new Subcategory();
@@ -83,7 +88,7 @@ public class CourseService {
     }
 
     @Transactional(readOnly = true)
-    public List<SubcategoryDto> getAllSubcategoriesForCourse(int courseId) {
+    public List<SubcategoryDto> getAllSubcategoriesForCourse(Long courseId) {
         var course =  courseRepository.findById(courseId)
                 .orElseThrow(()-> new ResourceNotFoundException("course not found"));
 
@@ -91,32 +96,37 @@ public class CourseService {
     }
 
     @Transactional(readOnly = true)
-    public SubcategoryDto getSubcategory(int courseId, int subcategoryId) {
+    public SubcategoryDto getSubcategory(Long courseId, Long subcategoryId) {
         var course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new ResourceNotFoundException("course not found"));
 
-        return course.getSubcategories().stream().filter(subcategory ->
-                subcategory.getId() == subcategoryId).findFirst().
-                map(subcategoryMapper::subcategoryToSubcategoryDto)
+        validateSubcategoryBelongsToCourse(course, subcategoryId);
+
+        return subcategoryRepository.findById(subcategoryId).map(subcategoryMapper::subcategoryToSubcategoryDto)
                 .orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
     }
 
     @Transactional
-    public SubcategoryDto updateSubcategory(int courseId, int subcategoryId, UpdateSubcategoryDto updateSubcategoryDto) {
+    public SubcategoryDto updateSubcategory(Long courseId, Long subcategoryId, UpdateSubcategoryDto updateSubcategoryDto) {
         var course =  courseRepository.findById(courseId)
                 .orElseThrow(()-> new ResourceNotFoundException("course not found"));
+
+        validateSubcategoryBelongsToCourse(course, subcategoryId);
+
         var subcategory = subcategoryRepository.findById(subcategoryId)
                 .orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
 
         updateSubcategoryDto.applyToSubcategory(subcategory);
-        courseRepository.save(course);
+        subcategoryRepository.save(subcategory);
         return subcategoryMapper.subcategoryToSubcategoryDto(subcategory);
     }
 
     @Transactional
-    public SubcategoryDto updateSubcategoryCourse(int courseId, int subcategoryId, UpdateSubcategoryCourse updateSubcategoryDto) {
+    public SubcategoryDto updateSubcategoryCourse(Long courseId, Long subcategoryId, UpdateSubcategoryCourse updateSubcategoryDto) {
         var currentCourse = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("current course not found"));
+
+        validateSubcategoryBelongsToCourse(currentCourse, subcategoryId);
 
         var newCourse = courseRepository.findById(updateSubcategoryDto.getCourseId())
                 .orElseThrow(() -> new ResourceNotFoundException("new course not found"));
@@ -124,19 +134,24 @@ public class CourseService {
         var subcategory = subcategoryRepository.findById(subcategoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("subcategory not found"));
 
-        currentCourse.removeSubcategory(subcategory);
-        newCourse.addSubcategory(subcategory);
+        if (!currentCourse.getId().equals(newCourse.getId()) && !newCourse.getSubcategories().contains(subcategory)) {
+            currentCourse.removeSubcategory(subcategory);
+            newCourse.addSubcategory(subcategory);
 
-        courseRepository.save(currentCourse);
-        courseRepository.save(newCourse);
+            courseRepository.save(currentCourse);
+            courseRepository.save(newCourse);
 
+        }
         return subcategoryMapper.subcategoryToSubcategoryDto(subcategory);
     }
 
     @Transactional
-    public void deleteSubcategory(int courseId, int subcategoryId) {
+    public void deleteSubcategory(Long courseId, Long subcategoryId) {
         var course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new ResourceNotFoundException("course not found"));
+
+        validateSubcategoryBelongsToCourse(course, subcategoryId);
+
         var subcategory = subcategoryRepository.findById(subcategoryId)
                 .orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
 
@@ -144,4 +159,25 @@ public class CourseService {
         subcategoryRepository.delete(subcategory);
         courseRepository.save(course);
     }
+
+    private void validateSubcategoryBelongsToCourse(Course course, Long subcategoryId) {
+        if (!course.getSubcategories().stream().anyMatch(s -> s.getId().equals(subcategoryId))) {
+            throw new ResourceMismatchException("subcategory not found under course");
+        }
+    }
+
+    //-------Module methods-------//
+
+    @Transactional(readOnly = true)
+    public List<SubcategoryDto> getAllModulesForSubcategory(Long courseId, Long subcategoryId) {
+        var course =  courseRepository.findById(courseId)
+                .orElseThrow(()-> new ResourceNotFoundException("course not found"));
+
+        validateSubcategoryBelongsToCourse(course, subcategoryId);
+
+        var subcategory = subcategoryRepository.findById(subcategoryId);
+
+        return course.getSubcategories().stream().map(subcategoryMapper::subcategoryToSubcategoryDto).collect(Collectors.toList());
+    }
+
 }

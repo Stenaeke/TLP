@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-11-20T16:27:50+0100",
+    date = "2025-11-24T14:38:18+0100",
     comments = "version: 1.6.3, compiler: javac, environment: Java 21.0.6 (Eclipse Adoptium)"
 )
 @Component
@@ -30,10 +30,10 @@ public class SubcategoryMapperImpl implements SubcategoryMapper {
         return subcategoryDto;
     }
 
-    private int subcategoryCourseId(Subcategory subcategory) {
+    private Long subcategoryCourseId(Subcategory subcategory) {
         Course course = subcategory.getCourse();
         if ( course == null ) {
-            return 0;
+            return null;
         }
         return course.getId();
     }
