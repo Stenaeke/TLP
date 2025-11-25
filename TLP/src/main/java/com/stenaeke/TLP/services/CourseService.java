@@ -83,6 +83,7 @@ public class CourseService {
         subcategory.setDescription(createSubcategoryRequest.getDescription());
         course.addSubcategory(subcategory);
 
+        subcategoryRepository.save(subcategory);
         courseRepository.save(course);
         return subcategoryMapper.subcategoryToSubcategoryDto(subcategory);
     }

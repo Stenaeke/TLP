@@ -111,4 +111,43 @@ public class CourseController {
         return ResponseEntity.noContent().build();
     }
 
+    //---------------Module endpoints---------------//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
