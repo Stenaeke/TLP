@@ -2,7 +2,6 @@ package com.stenaeke.TLP.controllers;
 
 import com.stenaeke.TLP.domain.Course;
 import com.stenaeke.TLP.domain.Subcategory;
-import com.stenaeke.TLP.domain.Teacher;
 import com.stenaeke.TLP.dtos.course.CourseDto;
 import com.stenaeke.TLP.dtos.auth.TokenResponse;
 import com.stenaeke.TLP.dtos.subcategory.SubcategoryDto;
@@ -24,9 +23,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,8 +40,6 @@ class CourseControllerTest {
     HttpHeaders headers;
     String token;
     String baseUrl;
-    JSONObject courseJson;
-    JSONObject subcategoryJson;
 
     @LocalServerPort
     private int port;
@@ -71,14 +66,6 @@ class CourseControllerTest {
             token = registerAndLoginTeacher();
         }
         headers.setBearerAuth(token);
-
-        courseJson = new JSONObject();
-        courseJson.put("title","Psychology");
-        courseJson.put("description","Psychology is the course of Psychology");
-
-        subcategoryJson = new JSONObject();
-        subcategoryJson.put("title","Behavioral psychology");
-        subcategoryJson.put("description","Behavioral psychology is the scientific study of how observable behaviors are learned and influenced by interactions with the environment.");
     }
 
     @AfterEach
@@ -98,8 +85,12 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("add course return status code 201 created")
-    void testAddCourse_whenValidDetailsProvided_returnsDtoAndHttpStatus201() {
+    void testAddCourse_whenValidDetailsProvided_returnsDtoAndHttpStatus201() throws JSONException {
         //Arrange
+        JSONObject courseJson = new JSONObject();
+        courseJson.put("title","Psychology");
+        courseJson.put("description","Psychology is the course of Psychology");
+
         HttpEntity<String> courseRequest = new HttpEntity<>(courseJson.toString(), headers);
 
         //Act
@@ -115,7 +106,9 @@ class CourseControllerTest {
     @DisplayName("add course with empty name return status code 400 bad request")
     void testAddCourse_whenInvalidNameProvided_returnsStatusCode400() throws JSONException {
         //Arrange
+        JSONObject courseJson = new JSONObject();
         courseJson.put("title","");
+        courseJson.put("description","Psychology is the course of Psychology");
 
         HttpEntity<String> courseRequest = new HttpEntity<>(courseJson.toString(), headers);
 
@@ -224,7 +217,7 @@ class CourseControllerTest {
         HttpEntity<String> getCourseRequest = new HttpEntity<>(headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/1", HttpMethod.GET, getCourseRequest, CourseDto.class);
+        var response = restTemplate.exchange(baseUrl + "/course/10", HttpMethod.GET, getCourseRequest, CourseDto.class);
 
         //Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -254,7 +247,7 @@ class CourseControllerTest {
         HttpEntity<String> deleteRequest = new HttpEntity<>(headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/1", HttpMethod.DELETE, deleteRequest, String.class);
+        var response = restTemplate.exchange(baseUrl + "/course/10", HttpMethod.DELETE, deleteRequest, String.class);
 
         //Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -283,6 +276,10 @@ class CourseControllerTest {
     void testAddSubcategory_whenValidDetailsProvided_returnsHttpStatus201() throws JSONException {
         //Arrange
         var testCourse = createCourse();
+
+        JSONObject subcategoryJson = new JSONObject();
+        subcategoryJson.put("title","Behavioral psychology");
+        subcategoryJson.put("description","Behavioral psychology is the scientific study of how observable behaviors are learned and influenced by interactions with the environment.");
         HttpEntity<String> newSubcategoryRequest = new HttpEntity<>(subcategoryJson.toString(), headers);
 
         //Act
@@ -303,7 +300,9 @@ class CourseControllerTest {
         //Arrange
         var testCourse = createCourse();
 
+        JSONObject subcategoryJson = new JSONObject();
         subcategoryJson.put("title","");
+        subcategoryJson.put("description","Behavioral psychology is the scientific study of how observable behaviors are learned and influenced by interactions with the environment.");
         HttpEntity<String> newSubcategoryRequest = new HttpEntity<>(subcategoryJson.toString(), headers);
 
         //Act
@@ -380,7 +379,7 @@ class CourseControllerTest {
         var testCourse = createCourse();
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/" + testCourse.getId() + "/subcategories/1", HttpMethod.GET, newSubcategoryRequest, String.class);
+        var response = restTemplate.exchange(baseUrl + "/course/" + testCourse.getId() + "/subcategories/10", HttpMethod.GET, newSubcategoryRequest, String.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -440,7 +439,7 @@ class CourseControllerTest {
         HttpEntity<String> updateSubcategoryRequest = new HttpEntity<>(updatedSubcategoryJson.toString(), headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/" + testCourse.getId() + "/subcategories/1/title", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
+        var response = restTemplate.exchange(baseUrl + "/course/" + testCourse.getId() + "/subcategories/10/title", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -460,7 +459,7 @@ class CourseControllerTest {
         HttpEntity<String> updateSubcategoryRequest = new HttpEntity<>(updatedSubcategoryJson.toString(), headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/2/subcategories/" + testSubcategory.getId() + "/title", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
+        var response = restTemplate.exchange(baseUrl + "/course/10/subcategories/" + testSubcategory.getId() + "/title", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
 
         //Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -512,82 +511,100 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("updateSubcategoryCourse with invalid new course id returns status 404")
-    @Order(25)
-    void testUpdateSubcategoryCourse_whenInvalidNewCourseDetailsProvided_returnsHttpStatus200() throws JSONException {
+    void testUpdateSubcategoryCourse_whenInvalidNewCourseDetailsProvided_returnsHttpStatus404() throws JSONException {
         //Arrange
+        var testCourse = createCourse();
+        var testSubcategory = createSubcategory(testCourse);
+
 
         JSONObject updatedSubcategoryJson = new JSONObject();
-        updatedSubcategoryJson.put("courseId", 25);
+        updatedSubcategoryJson.put("courseId", 20);
 
         HttpEntity<String> updateSubcategoryRequest = new HttpEntity<>(updatedSubcategoryJson.toString(), headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/3/subcategories/1/course", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
+        var response = restTemplate.exchange(baseUrl + "/course/" + testCourse.getId() + "/subcategories/" + testSubcategory.getId() + "/course", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
 
         //Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotEquals(subcategoryRepository.findById(testSubcategory.getId()).get().getCourse(), updatedSubcategoryJson.get("courseId"));
     }
 
     @Test
     @DisplayName("updateSubcategoryCourse with invalid course id returns status 404")
-    @Order(26)
-    void testUpdateSubcategoryCourse_whenInvalidCourseDetailsProvided_returnsHttpStatus200() throws JSONException {
+    void testUpdateSubcategoryCourse_whenInvalidCourseDetailsProvided_returnsHttpStatus404() throws JSONException {
         //Arrange
+        var testCourse1 = createCourse();
+        var testCourse2 = createCourse();
+        var testSubcategory = createSubcategory(testCourse1);
+
         JSONObject updatedSubcategoryJson = new JSONObject();
-        updatedSubcategoryJson.put("courseId", 3);
+        updatedSubcategoryJson.put("courseId", testCourse2.getId());
 
         HttpEntity<String> updateSubcategoryRequest = new HttpEntity<>(updatedSubcategoryJson.toString(), headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/200/subcategories/1/course", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
+        var response = restTemplate.exchange(baseUrl + "/course/10/subcategories/" + testSubcategory.getId() + "/course", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
 
         //Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals(testCourse1.getId(), subcategoryRepository.findById(testSubcategory.getId()).get().getCourse().getId());
     }
 
     @Test
     @DisplayName("updateSubcategoryCourse with invalid subcategory id returns status 404")
-    @Order(27)
-    void testUpdateSubcategoryCourse_whenInvalidSubcategoryDetailsProvided_returnsHttpStatus200() throws JSONException {
+    void testUpdateSubcategoryCourse_whenInvalidSubcategoryDetailsProvided_returnsHttpStatus404() throws JSONException {
         //Arrange
+        var testCourse1 = createCourse();
+        var testCourse2 = createCourse();
+        var testSubcategory = createSubcategory(testCourse1);
+
+
         JSONObject updatedSubcategoryJson = new JSONObject();
-        updatedSubcategoryJson.put("courseId", 3);
+        updatedSubcategoryJson.put("courseId", testCourse2.getId());
 
         HttpEntity<String> updateSubcategoryRequest = new HttpEntity<>(updatedSubcategoryJson.toString(), headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/3/subcategories/100/course", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
+        var response = restTemplate.exchange(baseUrl + "/course/" + testCourse1.getId() + "/subcategories/10/course", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(testCourse1.getId(), subcategoryRepository.findById(testSubcategory.getId()).get().getCourse().getId());
     }
 
     @Test
     @DisplayName("deleteSubcategory with non-existing subcategory id returns 404")
-    @Order(28)
     void testDeleteSubcategory_whenInvalidDetailsProvided_returnsHttpStatus404() {
         //Arrange
+        var testCourse = createCourse();
+        var testSubcategory = createSubcategory(testCourse);
+
         HttpEntity<String> deleteSubcategoryRequest = new HttpEntity<>(headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/3/subcategories/10000", HttpMethod.DELETE, deleteSubcategoryRequest, String.class);
+        var response = restTemplate.exchange(baseUrl + "/course/" + testCourse.getId() + "/subcategories/10", HttpMethod.DELETE, deleteSubcategoryRequest, String.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(subcategoryRepository.findById(testSubcategory.getId()).isPresent());
     }
 
     @Test
     @DisplayName("deleteSubcategory deletes subcategory and returns 200")
-    @Order(29)
     void testDeleteSubcategory_whenValidDetailsProvided_returnsHttpStatus200() {
         //Arrange
+        var testCourse = createCourse();
+        var testSubcategory = createSubcategory(testCourse);
+
         HttpEntity<String> deleteSubcategoryRequest = new HttpEntity<>(headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/3/subcategories/1", HttpMethod.DELETE, deleteSubcategoryRequest, String.class);
+        var response = restTemplate.exchange(baseUrl + "/course/" + testCourse.getId() + "/subcategories/" + testSubcategory.getId(), HttpMethod.DELETE, deleteSubcategoryRequest, String.class);
 
         //Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        assertFalse(subcategoryRepository.findById(testSubcategory.getId()).isPresent());
     }
 
     private String registerAndLoginTeacher() throws JSONException {

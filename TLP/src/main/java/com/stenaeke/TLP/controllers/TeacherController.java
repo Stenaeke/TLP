@@ -50,12 +50,8 @@ public class TeacherController {
     public ResponseEntity<TeacherDto> updateTeacher(@Valid
                                                     @RequestBody UpdateTeacherRequest updateRequest,
                                                     @PathVariable Long id) {
-        try {
-            var updatedTeacherDTO = teacherService.updateTeacher(id, updateRequest);
-            return ResponseEntity.ok(updatedTeacherDTO);
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        var updatedTeacherDTO = teacherService.updateTeacher(id, updateRequest);
+        return ResponseEntity.ok(updatedTeacherDTO);
 
     }
 
