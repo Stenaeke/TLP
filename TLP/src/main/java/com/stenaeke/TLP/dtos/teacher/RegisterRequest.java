@@ -24,7 +24,7 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank(message = "Password name can't be empty")
-    @Size(min = 6, max = 25, message = "Password must be between 6 and 2 characters")
+    @Size(min = 6, max = 25, message = "Password must be between 6 and 25 characters")
     private String password;
 
     private String confirmPassword;

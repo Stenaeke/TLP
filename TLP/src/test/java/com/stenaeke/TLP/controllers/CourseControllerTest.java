@@ -217,7 +217,7 @@ class CourseControllerTest {
         HttpEntity<String> getCourseRequest = new HttpEntity<>(headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/10", HttpMethod.GET, getCourseRequest, CourseDto.class);
+        var response = restTemplate.exchange(baseUrl + "/course/" + Long.MAX_VALUE, HttpMethod.GET, getCourseRequest, CourseDto.class);
 
         //Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -247,7 +247,7 @@ class CourseControllerTest {
         HttpEntity<String> deleteRequest = new HttpEntity<>(headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/10", HttpMethod.DELETE, deleteRequest, String.class);
+        var response = restTemplate.exchange(baseUrl + "/course/" + Long.MAX_VALUE, HttpMethod.DELETE, deleteRequest, String.class);
 
         //Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -439,7 +439,7 @@ class CourseControllerTest {
         HttpEntity<String> updateSubcategoryRequest = new HttpEntity<>(updatedSubcategoryJson.toString(), headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/" + testCourse.getId() + "/subcategories/10/title", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
+        var response = restTemplate.exchange(baseUrl + "/course/" + testCourse.getId() + "/subcategories/" + Long.MAX_VALUE + "/title", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -459,7 +459,7 @@ class CourseControllerTest {
         HttpEntity<String> updateSubcategoryRequest = new HttpEntity<>(updatedSubcategoryJson.toString(), headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/10/subcategories/" + testSubcategory.getId() + "/title", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
+        var response = restTemplate.exchange(baseUrl + "/course/" + Long.MAX_VALUE + "/subcategories/" + testSubcategory.getId() + "/title", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
 
         //Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -518,7 +518,7 @@ class CourseControllerTest {
 
 
         JSONObject updatedSubcategoryJson = new JSONObject();
-        updatedSubcategoryJson.put("courseId", 20);
+        updatedSubcategoryJson.put("courseId", Long.MAX_VALUE);
 
         HttpEntity<String> updateSubcategoryRequest = new HttpEntity<>(updatedSubcategoryJson.toString(), headers);
 
@@ -544,7 +544,7 @@ class CourseControllerTest {
         HttpEntity<String> updateSubcategoryRequest = new HttpEntity<>(updatedSubcategoryJson.toString(), headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/10/subcategories/" + testSubcategory.getId() + "/course", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
+        var response = restTemplate.exchange(baseUrl + "/course/" + Long.MAX_VALUE + "/subcategories/" + testSubcategory.getId() + "/course", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
 
         //Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -552,8 +552,8 @@ class CourseControllerTest {
     }
 
     @Test
-    @DisplayName("updateSubcategoryCourse with invalid subcategory id returns status 404")
-    void testUpdateSubcategoryCourse_whenInvalidSubcategoryDetailsProvided_returnsHttpStatus404() throws JSONException {
+    @DisplayName("updateSubcategoryCourse with invalid subcategory id returns status 400")
+    void testUpdateSubcategoryCourse_whenInvalidSubcategoryDetailsProvided_returnsHttpStatus400() throws JSONException {
         //Arrange
         var testCourse1 = createCourse();
         var testCourse2 = createCourse();
@@ -566,7 +566,7 @@ class CourseControllerTest {
         HttpEntity<String> updateSubcategoryRequest = new HttpEntity<>(updatedSubcategoryJson.toString(), headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/" + testCourse1.getId() + "/subcategories/10/course", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
+        var response = restTemplate.exchange(baseUrl + "/course/" + testCourse1.getId() + "/subcategories/" + Long.MAX_VALUE + "/course", HttpMethod.PUT, updateSubcategoryRequest, SubcategoryDto.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -583,7 +583,7 @@ class CourseControllerTest {
         HttpEntity<String> deleteSubcategoryRequest = new HttpEntity<>(headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/course/" + testCourse.getId() + "/subcategories/10", HttpMethod.DELETE, deleteSubcategoryRequest, String.class);
+        var response = restTemplate.exchange(baseUrl + "/course/" + testCourse.getId() + "/subcategories/" + Long.MAX_VALUE, HttpMethod.DELETE, deleteSubcategoryRequest, String.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());

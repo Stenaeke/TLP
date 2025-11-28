@@ -1,6 +1,7 @@
-package com.stenaeke.TLP.security;
+package com.stenaeke.TLP.config;
 
 
+import com.stenaeke.TLP.security.JwtAuthenticationFilter;
 import com.stenaeke.TLP.services.JWTService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -29,9 +30,14 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/error").permitAll()
-                        .requestMatchers("/teacher/register").permitAll()
-                        .requestMatchers("/auth/teacher/login").permitAll()
+                        .requestMatchers(
+                                "/error",
+                                "/teacher/register",
+                                "/auth/teacher/login",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
                         .requestMatchers("/teacher/**").hasAuthority("ROLE_TEACHER")
                         .anyRequest().authenticated()
                 )

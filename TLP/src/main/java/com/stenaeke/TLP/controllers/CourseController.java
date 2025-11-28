@@ -4,6 +4,9 @@ import com.stenaeke.TLP.dtos.course.CreateCourseDto;
 import com.stenaeke.TLP.dtos.course.CourseDto;
 import com.stenaeke.TLP.dtos.course.UpdateCourseDescriptionDto;
 import com.stenaeke.TLP.dtos.course.UpdateCourseTitleDto;
+import com.stenaeke.TLP.dtos.module.CreateModuleRequest;
+import com.stenaeke.TLP.dtos.module.ModuleDto;
+import com.stenaeke.TLP.dtos.module.UpdateModuleTitleDto;
 import com.stenaeke.TLP.dtos.subcategory.*;
 import com.stenaeke.TLP.services.CourseService;
 import jakarta.validation.Valid;
@@ -15,7 +18,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 
 @RestController
-@RequestMapping("/course")
+@RequestMapping("/courses")
 @RequiredArgsConstructor
 public class CourseController {
 
@@ -41,7 +44,7 @@ public class CourseController {
     ){
         var createdCourseDto = courseService.createCourse(createCourseDto);
 
-        var uri = uriComponentsBuilder.path("/course/{courseId}").buildAndExpand(createdCourseDto.getId()).toUri();
+        var uri = uriComponentsBuilder.path("/courses/{courseId}").buildAndExpand(createdCourseDto.getId()).toUri();
         return ResponseEntity.created(uri).body(createdCourseDto);
     }
 
@@ -71,7 +74,7 @@ public class CourseController {
                                                          UriComponentsBuilder uriComponentsBuilder
     ) {
         var subcategoryDto = courseService.addSubcategoryToCourse(courseId, createSubcategoryRequest);
-        var uri = uriComponentsBuilder.path("/course/{courseId}/subcategories/{subcategoryId}").buildAndExpand(courseId, subcategoryDto.getId()).toUri();
+        var uri = uriComponentsBuilder.path("/courses/{courseId}/subcategories/{subcategoryId}").buildAndExpand(courseId, subcategoryDto.getId()).toUri();
         return ResponseEntity.created(uri).body(subcategoryDto);
     }
 
@@ -113,6 +116,53 @@ public class CourseController {
 
     //---------------Module endpoints---------------//
 
+    @PostMapping("/{courseId}/subcategories/{subcategoryId}/modules")
+    public ResponseEntity<ModuleDto> addModule(@PathVariable Long courseId, @PathVariable Long subcategoryId,
+                                               @Valid @RequestBody CreateModuleRequest createModuleRequest,
+                                               UriComponentsBuilder uriComponentsBuilder) {
+        var moduleDto = courseService.addModuleToSubcategory(courseId, subcategoryId, createModuleRequest);
+        var uri = uriComponentsBuilder.path("/courses/{courseId}/subcategories/{subcategoryId}/modules/{moduleId}").buildAndExpand(courseId, subcategoryId, moduleDto.getId()).toUri();
+        return ResponseEntity.created(uri).body(moduleDto);
+    }
+
+    @GetMapping("/{courseId}/subcategories/{subcategoryId}/modules/{moduleId}")
+    public ResponseEntity<ModuleDto> getModule(@PathVariable Long courseId, @PathVariable Long subcategoryId, @PathVariable Long moduleId) {
+        var moduleDto = courseService.getModule(courseId, subcategoryId, moduleId);
+        return ResponseEntity.ok(moduleDto);
+    }
+
+    @GetMapping("/{courseId}/subcategories/{subcategoryId}/modules/")
+    public ResponseEntity<List<ModuleDto>> getModulesInSubcategory(@PathVariable Long courseId, @PathVariable Long subcategoryId) {
+        var moduleDtos = courseService.getAllModulesForSubcategory(courseId, subcategoryId);
+        return ResponseEntity.ok(moduleDtos);
+    }
+
+    @PutMapping("/{courseId}/subcategories/{subcategoryId}/modules/{moduleId}/title")
+    public ResponseEntity<ModuleDto> updateModuleTitle(@PathVariable Long courseId,
+                                                       @PathVariable Long subcategoryId,
+                                                       @PathVariable Long moduleId,
+                                                       @Valid @RequestBody UpdateModuleTitleDto updateModuleDto){
+        var moduleDto = courseService.updateModule(courseId, subcategoryId, moduleId, updateModuleDto);
+        return ResponseEntity.ok(moduleDto);
+    }
+
+    @PutMapping("/{courseId}/subcategories/{subcategoryId}/modules/{moduleId}/description")
+    public ResponseEntity<ModuleDto> updateModuleDescription(@PathVariable Long courseId,
+                                                       @PathVariable Long subcategoryId,
+                                                       @PathVariable Long moduleId,
+                                                       @Valid @RequestBody UpdateModuleTitleDto updateModuleDto){
+        var moduleDto = courseService.updateModule(courseId, subcategoryId, moduleId, updateModuleDto);
+        return ResponseEntity.ok(moduleDto);
+    }
+
+    @PutMapping("/{courseId}/subcategories/{subcategoryId}/modules/{moduleId}/content")
+    public ResponseEntity<ModuleDto> updateModuleContent(@PathVariable Long courseId,
+                                                       @PathVariable Long subcategoryId,
+                                                       @PathVariable Long moduleId,
+                                                       @Valid @RequestBody UpdateModuleTitleDto updateModuleDto){
+        var moduleDto = courseService.updateModule(courseId, subcategoryId, moduleId, updateModuleDto);
+        return ResponseEntity.ok(moduleDto);
+    }
 
 
 

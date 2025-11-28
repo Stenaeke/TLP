@@ -4,7 +4,6 @@ import com.stenaeke.TLP.domain.Teacher;
 import com.stenaeke.TLP.dtos.auth.TokenResponse;
 import com.stenaeke.TLP.dtos.teacher.TeacherDto;
 import com.stenaeke.TLP.repositories.TeacherRepository;
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
@@ -91,10 +90,10 @@ class TeacherControllerTest {
     @DisplayName("Teacher can be created")
     void testCreateTeacher_whenValidDetailsProvided_returnUserDetails() throws JSONException {
         //Arrange
-        HttpEntity<@NotNull String> request = new HttpEntity<>(userDetailsRequestJson.toString(), headers);
+        HttpEntity<String> request = new HttpEntity<>(userDetailsRequestJson.toString(), headers);
 
         //Act
-        ResponseEntity<@NotNull TeacherDto> createdTeacherDetails = restTemplate.postForEntity(baseUrl + "/teacher/register", request, TeacherDto.class);
+        ResponseEntity<TeacherDto> createdTeacherDetails = restTemplate.postForEntity(baseUrl + "/teacher/register", request, TeacherDto.class);
 
         //Assert
         assertEquals(HttpStatus.CREATED, createdTeacherDetails.getStatusCode());
@@ -138,24 +137,25 @@ class TeacherControllerTest {
         //Arrange
 
         userDetailsRequestJson.put("firstName", "");
-        HttpEntity<@NotNull String> request = new HttpEntity<>(userDetailsRequestJson.toString(), headers);
+        HttpEntity<String> request = new HttpEntity<>(userDetailsRequestJson.toString(), headers);
 
         //Act
-        ResponseEntity<@NotNull TeacherDto> createdTeacherDetails = restTemplate.postForEntity(baseUrl + "/teacher/register", request, TeacherDto.class);
+        ResponseEntity<TeacherDto> createdTeacherDetails = restTemplate.postForEntity(baseUrl + "/teacher/register", request, TeacherDto.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, createdTeacherDetails.getStatusCode());
-        assertFalse(teacherRepository.findByEmail(createdTeacherDetails.getBody().getEmail()).isPresent());    }
+        assertFalse(teacherRepository.findByEmail(createdTeacherDetails.getBody().getEmail()).isPresent());
+    }
 
     @Test
     @DisplayName("CreateTeacher with empty name returns status code 400")
     void testCreateTeacher_whenEmptyLastName_returns400StatusCode() throws JSONException {
         //Arrange
         userDetailsRequestJson.put("lastName", "");
-        HttpEntity<@NotNull String> request = new HttpEntity<>(userDetailsRequestJson.toString(), headers);
+        HttpEntity<String> request = new HttpEntity<>(userDetailsRequestJson.toString(), headers);
 
         //Act
-        ResponseEntity<@NotNull TeacherDto> createdTeacherDetails = restTemplate.postForEntity(baseUrl + "/teacher/register", request, TeacherDto.class);
+        ResponseEntity<TeacherDto> createdTeacherDetails = restTemplate.postForEntity(baseUrl + "/teacher/register", request, TeacherDto.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, createdTeacherDetails.getStatusCode());
@@ -166,10 +166,10 @@ class TeacherControllerTest {
     void testCreateTeacher_whenEmptyEmail_returns400StatusCode() throws JSONException {
         //Arrange
         userDetailsRequestJson.put("email", "");
-        HttpEntity<@NotNull String> request = new HttpEntity<>(userDetailsRequestJson.toString(), headers);
+        HttpEntity<String> request = new HttpEntity<>(userDetailsRequestJson.toString(), headers);
 
         //Act
-        ResponseEntity<@NotNull TeacherDto> createdTeacherDetails = restTemplate.postForEntity(baseUrl + "/teacher/register", request, TeacherDto.class);
+        ResponseEntity<TeacherDto> createdTeacherDetails = restTemplate.postForEntity(baseUrl + "/teacher/register", request, TeacherDto.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, createdTeacherDetails.getStatusCode());
@@ -180,10 +180,10 @@ class TeacherControllerTest {
     void testCreateTeacher_whenWrongFormatEmail_returns400StatusCode() throws JSONException {
         //Arrange
         userDetailsRequestJson.put("email", "thisEmailIsWrongFormat");
-        HttpEntity<@NotNull String> request = new HttpEntity<>(userDetailsRequestJson.toString(), headers);
+        HttpEntity<String> request = new HttpEntity<>(userDetailsRequestJson.toString(), headers);
 
         //Act
-        ResponseEntity<@NotNull TeacherDto> createdTeacherDetails = restTemplate.postForEntity(baseUrl + "/teacher/register", request, TeacherDto.class);
+        ResponseEntity<TeacherDto> createdTeacherDetails = restTemplate.postForEntity(baseUrl + "/teacher/register", request, TeacherDto.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, createdTeacherDetails.getStatusCode());
@@ -195,11 +195,10 @@ class TeacherControllerTest {
         //Arrange
         userDetailsRequestJson.put("password", "hello");
         userDetailsRequestJson.put("confirmPassword", "bye");
-        headers.remove(HttpHeaders.AUTHORIZATION);
-        HttpEntity<@NotNull String> request = new HttpEntity<>(userDetailsRequestJson.toString(), headers);
+        HttpEntity<String> request = new HttpEntity<>(userDetailsRequestJson.toString(), headers);
 
         //Act
-        ResponseEntity<@NotNull TeacherDto> createdTeacherDetails = restTemplate.postForEntity(baseUrl + "/teacher/register", request, TeacherDto.class);
+        ResponseEntity<TeacherDto> createdTeacherDetails = restTemplate.postForEntity(baseUrl + "/teacher/register", request, TeacherDto.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, createdTeacherDetails.getStatusCode());
@@ -213,9 +212,9 @@ class TeacherControllerTest {
         Teacher testTeacher1 = createTeacher("test@email.com");
         Teacher testTeacher2 = createTeacher("test2@email.com");
 
-        HttpEntity<@NotNull String> request = new HttpEntity<>(headers);
+        HttpEntity<String> request = new HttpEntity<>(headers);
         //Act
-        ResponseEntity<@NotNull List<TeacherDto>> returnedTeachersResponse = restTemplate.exchange(baseUrl + "/teacher", HttpMethod.GET, request, new ParameterizedTypeReference<>() {
+        ResponseEntity<List<TeacherDto>> returnedTeachersResponse = restTemplate.exchange(baseUrl + "/teacher", HttpMethod.GET, request, new ParameterizedTypeReference<>() {
         });
 
         //Assert
@@ -230,10 +229,9 @@ class TeacherControllerTest {
     void testGetAllTeachers_whenAuthTokenMissing_returnForbidden() {
         //Arrange
         headers.remove(HttpHeaders.AUTHORIZATION);
-        HttpEntity<@NotNull String> request = new HttpEntity<>(headers);
+        HttpEntity<String> request = new HttpEntity<>(headers);
         //Act
-        ResponseEntity<@NotNull List<TeacherDto>> returnedTeachersResponse = restTemplate.exchange(baseUrl + "/teacher", HttpMethod.GET, request, new ParameterizedTypeReference<>() {
-        });
+        ResponseEntity<String> returnedTeachersResponse = restTemplate.exchange(baseUrl + "/teacher", HttpMethod.GET, request, String.class);
 
         //Assert
         assertEquals(HttpStatus.FORBIDDEN, returnedTeachersResponse.getStatusCode());
@@ -246,10 +244,10 @@ class TeacherControllerTest {
         //Arrange
         Teacher testTeacher = createTeacher("testTeacher@email.com");
 
-        HttpEntity<@NotNull String> request = new HttpEntity<>(headers);
+        HttpEntity<String> request = new HttpEntity<>(headers);
 
         //Act
-        ResponseEntity<@NotNull TeacherDto> returnedTeacher = restTemplate.exchange(baseUrl + "/teacher/" + testTeacher.getId(), HttpMethod.GET, request, TeacherDto.class);
+        ResponseEntity<TeacherDto> returnedTeacher = restTemplate.exchange(baseUrl + "/teacher/" + testTeacher.getId(), HttpMethod.GET, request, TeacherDto.class);
 
         //Assert
         assertEquals(HttpStatus.OK, returnedTeacher.getStatusCode());
@@ -266,14 +264,14 @@ class TeacherControllerTest {
         //Arrange
         Teacher testTeacher = createTeacher("testTeacher@email.com");
 
-        HttpEntity<@NotNull String> request = new HttpEntity<>(headers);
+        HttpEntity<String> request = new HttpEntity<>(headers);
 
         //Act
-        ResponseEntity<@NotNull TeacherDto> returnedTeacher = restTemplate.exchange(baseUrl + "/teacher/10", HttpMethod.GET, request, TeacherDto.class);
+        ResponseEntity<TeacherDto> returnedTeacher = restTemplate.exchange(baseUrl + "/teacher/" + Long.MAX_VALUE, HttpMethod.GET, request, TeacherDto.class);
 
         //Assert
         assertEquals(HttpStatus.NOT_FOUND, returnedTeacher.getStatusCode());
-        assertFalse(teacherRepository.findById(10L).isPresent());
+        assertFalse(teacherRepository.findById(Long.MAX_VALUE).isPresent());
     }
 
     @Test
@@ -287,7 +285,7 @@ class TeacherControllerTest {
         HttpEntity<String> requestEntity = new HttpEntity<>(updateTeacherRequestJson.toString(), headers);
 
         //Act
-        ResponseEntity<@NotNull TeacherDto> returnedTeachersResponse = restTemplate.exchange(baseUrl + "/teacher/" + testTeacher.getId(), HttpMethod.PATCH, requestEntity, TeacherDto.class);
+        ResponseEntity<TeacherDto> returnedTeachersResponse = restTemplate.exchange(baseUrl + "/teacher/" + testTeacher.getId(), HttpMethod.PATCH, requestEntity, TeacherDto.class);
 
         //Assert
         assertEquals(HttpStatus.OK, returnedTeachersResponse.getStatusCode());
@@ -307,11 +305,11 @@ class TeacherControllerTest {
         HttpEntity<String> requestEntity = new HttpEntity<>(updateTeacherRequestJson.toString(), headers);
 
         //Act
-        ResponseEntity<@NotNull TeacherDto> returnedTeacherResponse = restTemplate.exchange(baseUrl + "/teacher/10", HttpMethod.PATCH, requestEntity, TeacherDto.class);
+        ResponseEntity<TeacherDto> returnedTeacherResponse = restTemplate.exchange(baseUrl + "/teacher/" + Long.MAX_VALUE, HttpMethod.PATCH, requestEntity, TeacherDto.class);
 
         //Assert
         assertEquals(HttpStatus.NOT_FOUND, returnedTeacherResponse.getStatusCode());
-        assertFalse(teacherRepository.findById(10L).isPresent());
+        assertFalse(teacherRepository.findById(Long.MAX_VALUE).isPresent());
     }
 
     @Test
@@ -325,7 +323,7 @@ class TeacherControllerTest {
         HttpEntity<String> requestEntity = new HttpEntity<>(updateTeacherRequestJson.toString(), headers);
 
         //Act
-        ResponseEntity<@NotNull TeacherDto> returnedTeacherResponse = restTemplate.exchange(baseUrl + "/teacher/" + testTeacher.getId(), HttpMethod.PATCH, requestEntity, TeacherDto.class);
+        ResponseEntity<TeacherDto> returnedTeacherResponse = restTemplate.exchange(baseUrl + "/teacher/" + testTeacher.getId(), HttpMethod.PATCH, requestEntity, TeacherDto.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, returnedTeacherResponse.getStatusCode());
@@ -361,7 +359,7 @@ class TeacherControllerTest {
 
         //Act
         ResponseEntity<?> response = restTemplate.exchange(
-                baseUrl + "/teacher/10",
+                baseUrl + "/teacher/" + Long.MAX_VALUE,
                 HttpMethod.DELETE,
                 requestEntity,
                 Void.class

@@ -47,4 +47,15 @@ public class Subcategory {
     public final int hashCode() {
         return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
+
+    public void addModule(Module module) {
+        modules.add(module);
+        module.setSubcategory(this);
+    }
+
+    public void removeModule(Module module) {
+        modules.remove(module);
+        module.setSubcategory(null);
+    }
+
 }
