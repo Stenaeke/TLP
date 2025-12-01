@@ -6,14 +6,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UpdateModuleTitleDto implements UpdateModuleDto {
+public final class UpdateModuleTitleDto implements UpdateModuleDto {
 
     @NotEmpty
     @Size(min = 3, max = 255, message = "Title must be between 3 and 255 characters")
     private String title;
 
-    @Override
-    public void applyToModule(Module module) {
-        module.setTitle(title);
-    }
 }

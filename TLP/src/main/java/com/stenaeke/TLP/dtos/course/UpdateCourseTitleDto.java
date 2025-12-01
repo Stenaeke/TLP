@@ -5,12 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class UpdateCourseTitleDto implements UpdateCourseDto {
+public final class UpdateCourseTitleDto implements UpdateCourseDto {
     @NotBlank
     private String title;
 
-    @Override
-    public void applyToCourse(Course course) {
-        course.setTitle(title);
-    }
 }

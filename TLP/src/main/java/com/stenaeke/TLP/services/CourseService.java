@@ -4,9 +4,7 @@ import com.stenaeke.TLP.domain.Course;
 import com.stenaeke.TLP.domain.Subcategory;
 import com.stenaeke.TLP.domain.Module;
 import com.stenaeke.TLP.dtos.course.*;
-import com.stenaeke.TLP.dtos.module.CreateModuleRequest;
-import com.stenaeke.TLP.dtos.module.ModuleDto;
-import com.stenaeke.TLP.dtos.module.UpdateModuleDto;
+import com.stenaeke.TLP.dtos.module.*;
 import com.stenaeke.TLP.dtos.subcategory.*;
 import com.stenaeke.TLP.exceptions.ResourceMismatchException;
 import com.stenaeke.TLP.exceptions.ResourceNotFoundException;
@@ -60,11 +58,14 @@ public class CourseService {
     }
 
     @Transactional
-    public CourseDto updateCourse(UpdateCourseDto updateCourseDto, Long id) { //TODO:Move update logic from DTOs
+    public CourseDto updateCourse(UpdateCourseDto updateCourseDto, Long id) {
         var course = courseRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("course not found"));
 
-        updateCourseDto.applyToCourse(course);
+        switch (updateCourseDto){
+            case UpdateCourseTitleDto title -> course.setTitle(title.getTitle());
+            case UpdateCourseDescriptionDto description -> course.setDescription(description.getDescription());
+        }
         courseRepository.save(course);
 
         return courseMapper.courseToCourseDto(course);
@@ -226,7 +227,7 @@ public class CourseService {
     }
 
     @Transactional
-    public ModuleDto updateModule(Long courseId, Long subcategoryId, Long moduleId, @Valid UpdateModuleDto updateModuleDto) { //TODO:Move update logic from DTOs
+    public ModuleDto updateModule(Long courseId, Long subcategoryId, Long moduleId, @Valid UpdateModuleDto updateModuleDto) {
         var course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new ResourceNotFoundException("course not found"));
         validateSubcategoryBelongsToCourse(course, subcategoryId);
@@ -236,7 +237,10 @@ public class CourseService {
         var module = moduleRepository.findById(moduleId)
                 .orElseThrow(()-> new ResourceNotFoundException("module not found"));
 
-        updateModuleDto.applyToModule(module);
+        switch (updateModuleDto) {
+            case UpdateModuleTitleDto title -> subcategory.setTitle(title.getTitle());
+            case UpdateModuleDescriptionDto description-> subcategory.setDescription(description.getDescription());
+        }
 
         return moduleMapper.moduleToModuleDto(module);
 
