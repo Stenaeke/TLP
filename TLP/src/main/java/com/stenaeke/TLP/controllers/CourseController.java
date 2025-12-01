@@ -2,7 +2,7 @@ package com.stenaeke.TLP.controllers;
 
 import com.stenaeke.TLP.dtos.course.CreateCourseDto;
 import com.stenaeke.TLP.dtos.course.CourseDto;
-import com.stenaeke.TLP.dtos.course.UpdateCourseDescriptionDto;
+import com.stenaeke.TLP.dtos.course.UpdateCourseContentDto;
 import com.stenaeke.TLP.dtos.course.UpdateCourseTitleDto;
 import com.stenaeke.TLP.dtos.module.CreateModuleRequest;
 import com.stenaeke.TLP.dtos.module.ModuleDto;
@@ -56,7 +56,7 @@ public class CourseController {
 
     @PutMapping("/{courseId}/description")
     public ResponseEntity<CourseDto> updateCourseDescription(@PathVariable Long courseId,
-                                                             @Valid @RequestBody UpdateCourseDescriptionDto updateCourseDescriptionDto){
+                                                             @Valid @RequestBody UpdateCourseContentDto updateCourseDescriptionDto){
         return ResponseEntity.ok(courseService.updateCourse(updateCourseDescriptionDto, courseId));
     }
 

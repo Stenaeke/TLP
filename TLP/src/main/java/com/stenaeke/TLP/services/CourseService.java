@@ -64,10 +64,10 @@ public class CourseService {
 
         switch (updateCourseDto){
             case UpdateCourseTitleDto title -> course.setTitle(title.getTitle());
-            case UpdateCourseDescriptionDto description -> course.setDescription(description.getDescription());
+            case UpdateCourseContentDto description -> course.setDescription(description.getDescription());
         }
-        courseRepository.save(course);
 
+        courseRepository.save(course);
         return courseMapper.courseToCourseDto(course);
     }
 
@@ -238,10 +238,12 @@ public class CourseService {
                 .orElseThrow(()-> new ResourceNotFoundException("module not found"));
 
         switch (updateModuleDto) {
-            case UpdateModuleTitleDto title -> subcategory.setTitle(title.getTitle());
-            case UpdateModuleDescriptionDto description-> subcategory.setDescription(description.getDescription());
+            case UpdateModuleTitleDto title -> module.setTitle(title.getTitle());
+            case UpdateModuleContentDto content-> module.setContent(content.getContent());
         }
 
+        module.setUpdatedAt(OffsetDateTime.now());
+        moduleRepository.save(module);
         return moduleMapper.moduleToModuleDto(module);
 
     }
