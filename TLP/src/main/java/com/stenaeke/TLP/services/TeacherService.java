@@ -56,21 +56,10 @@ public class TeacherService {
 
     @Transactional
     public TeacherDto updateTeacher(Long id, UpdateTeacherRequest updateRequest) {
-        var teacher = teacherRepository.findById(id).orElse(null);
+        var teacher = teacherRepository.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("Teacher not found with id " + id));
 
-        if (teacher == null) {
-            throw new ResourceNotFoundException("Teacher not found");
-        }
-
-        if (updateRequest.getFirstName() != null) {
-            teacher.setFirstName(updateRequest.getFirstName());
-        }
-        if (updateRequest.getLastName() != null) {
-            teacher.setLastName(updateRequest.getLastName());
-        }
-        if (updateRequest.getEmail() != null) {
-            teacher.setEmail(updateRequest.getEmail());
-        }
+        teacherMapper.updateTeacherFromRequest(updateRequest, teacher);
 
         teacherRepository.save(teacher);
         return teacherMapper.mapToDTO(teacher);

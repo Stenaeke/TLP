@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.time.OffsetDateTime;
+
 @Data
 public class CreateModuleRequest {
     @NotEmpty
@@ -14,5 +16,7 @@ public class CreateModuleRequest {
     @NotNull
     private Boolean published;
     private String content;
+    @NotNull
+    private long subcategoryId;
 }
 
