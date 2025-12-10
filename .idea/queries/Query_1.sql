@@ -1,0 +1,1 @@
+DELETE FROM tlp.student WHERE id>0;
