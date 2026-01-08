@@ -25,12 +25,12 @@ public class SubcategoryService {
 
 
     @Transactional
-    public SubcategoryDto addSubcategoryToCourse(CreateSubcategoryRequest createSubcategoryRequest) {
-        var courseReference = entityManager.getReference(Course.class, createSubcategoryRequest.getCourseId());
+    public SubcategoryDto addSubcategoryToCourse(CreateSubcategoryDto createSubcategoryDto) {
+        var courseReference = entityManager.getReference(Course.class, createSubcategoryDto.getCourseId());
 
         Subcategory subcategory = new Subcategory();
-        subcategory.setTitle(createSubcategoryRequest.getTitle());
-        subcategory.setDescription(createSubcategoryRequest.getDescription());
+        subcategory.setTitle(createSubcategoryDto.getTitle());
+        subcategory.setDescription(createSubcategoryDto.getDescription());
         subcategory.setCourse(courseReference);
 
         subcategoryRepository.save(subcategory);
@@ -38,39 +38,39 @@ public class SubcategoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<SubcategoryDto> getAllSubcategoriesForCourse(Long courseId) {
-        return subcategoryRepository.findByCourseId(courseId).stream().map(subcategoryMapper::subcategoryToSubcategoryDto).collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public SubcategoryDto getSubcategory(Long subcategoryId) {
+    public SubcategoryDto getSubcategory(long subcategoryId) {
 
         return subcategoryRepository.findById(subcategoryId).map(subcategoryMapper::subcategoryToSubcategoryDto)
                 .orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
     }
 
+    @Transactional(readOnly = true)
+    public List<SubcategoryDto> getAllSubcategoriesForCourse(long courseId) {
+        return subcategoryRepository.findByCourseId(courseId).stream().map(subcategoryMapper::subcategoryToSubcategoryDto).collect(Collectors.toList());
+    }
+
     @Transactional
-    public SubcategoryDto updateSubcategory(Long subcategoryId, UpdateSubcategoryRequest updateSubcategoryRequest) {
+    public SubcategoryDto updateSubcategory(long subcategoryId, UpdateSubcategoryDto updateSubcategoryDto) {
         try {
             var subcategory = subcategoryRepository.findById(subcategoryId)
                     .orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
 
-            subcategoryMapper.UpdateSubcategoryFromRequest(updateSubcategoryRequest, subcategory);
+            subcategoryMapper.UpdateSubcategoryFromRequest(updateSubcategoryDto, subcategory);
 
-            if (updateSubcategoryRequest.getCourseId() != null) {
-                Course courseRef = entityManager.getReference(Course.class, updateSubcategoryRequest.getCourseId());
+            if (updateSubcategoryDto.getCourseId() != null) {
+                Course courseRef = entityManager.getReference(Course.class, updateSubcategoryDto.getCourseId());
                 subcategory.setCourse(courseRef);
             }
 
             subcategoryRepository.saveAndFlush(subcategory);
             return subcategoryMapper.subcategoryToSubcategoryDto(subcategory);
         } catch (DataIntegrityViolationException e) {
-            throw new ResourceNotFoundException("Course not found with id: " + updateSubcategoryRequest.getCourseId());
+            throw new ResourceNotFoundException("Course not found with id: " + updateSubcategoryDto.getCourseId());
         }
     }
 
     @Transactional
-    public void deleteSubcategory(Long subcategoryId) {
+    public void deleteSubcategory(long subcategoryId) {
         var subcategory = subcategoryRepository.findById(subcategoryId)
                 .orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
 

@@ -1,7 +1,6 @@
 package com.stenaeke.TLP.controllers;
 
 import com.stenaeke.TLP.dtos.course.*;
-import com.stenaeke.TLP.dtos.subcategory.*;
 import com.stenaeke.TLP.services.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +40,8 @@ public class CourseController {
     }
 
     @PatchMapping("/{courseId}")
-    public ResponseEntity<CourseDto> updateCourse(@PathVariable long courseId, @Valid @RequestBody UpdateCourseRequest updateCourseRequest) {
-        var updatedCourseDto = courseService.updateCourse(courseId, updateCourseRequest);
+    public ResponseEntity<CourseDto> updateCourse(@PathVariable long courseId, @Valid @RequestBody UpdateCourseDto updateCourseDto) {
+        var updatedCourseDto = courseService.updateCourse(courseId, updateCourseDto);
 
         return ResponseEntity.ok(updatedCourseDto);
     }

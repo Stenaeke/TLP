@@ -4,6 +4,8 @@ import com.stenaeke.TLP.domain.Course;
 import com.stenaeke.TLP.domain.Subcategory;
 import com.stenaeke.TLP.dtos.course.CourseDto;
 import com.stenaeke.TLP.dtos.auth.TokenResponse;
+import com.stenaeke.TLP.dtos.course.CreateCourseDto;
+import com.stenaeke.TLP.dtos.course.UpdateCourseDto;
 import com.stenaeke.TLP.dtos.subcategory.SubcategoryDto;
 import com.stenaeke.TLP.dtos.teacher.TeacherDto;
 import com.stenaeke.TLP.repositories.CourseRepository;
@@ -44,7 +46,8 @@ class CourseControllerTest {
 
     @Container
     @ServiceConnection
-    private static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:latest");
+    private static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:latest")
+            .withReuse(true);
 
     static {
         postgres.start();
@@ -82,13 +85,14 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("add course return status code 201 created")
-    void testAddCourse_whenValidDetailsProvided_returnsDtoAndHttpStatus201() throws JSONException {
+    void testAddCourse_whenValidDetailsProvided_returnsDtoAndHttpStatus201() {
         //Arrange
-        JSONObject courseJson = new JSONObject();
-        courseJson.put("title","Psychology");
-        courseJson.put("description","Psychology is the course of Psychology");
 
-        HttpEntity<String> courseRequest = new HttpEntity<>(courseJson.toString(), headers);
+        CreateCourseDto createCourseDto = new CreateCourseDto();
+        createCourseDto.setTitle("Psychology");
+        createCourseDto.setDescription("Psychology is the course of Psychology");
+
+        HttpEntity<CreateCourseDto> courseRequest = new HttpEntity<>(createCourseDto, headers);
 
         //Act
         var courseDto = restTemplate.postForEntity(baseUrl + "/courses", courseRequest, CourseDto.class);
@@ -101,16 +105,16 @@ class CourseControllerTest {
 
     @Test
     @DisplayName("add course with empty name return status code 400 bad request")
-    void testAddCourse_whenInvalidNameProvided_returnsStatusCode400() throws JSONException {
+    void testAddCourse_whenInvalidNameProvided_returnsStatusCode400() {
         //Arrange
-        JSONObject courseJson = new JSONObject();
-        courseJson.put("title","");
-        courseJson.put("description","Psychology is the course of Psychology");
+        CreateCourseDto createCourseDto = new CreateCourseDto();
+        createCourseDto.setTitle("");
+        createCourseDto.setDescription("Psychology is the course of Psychology");
 
-        HttpEntity<String> courseRequest = new HttpEntity<>(courseJson.toString(), headers);
+        HttpEntity<CreateCourseDto> courseRequest = new HttpEntity<>(createCourseDto, headers);
 
         //Act
-        var courseDto = restTemplate.postForEntity(baseUrl + "/courses", courseRequest, String.class);
+        var courseDto = restTemplate.postForEntity(baseUrl + "/courses", courseRequest, CourseDto.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, courseDto.getStatusCode());
@@ -123,17 +127,17 @@ class CourseControllerTest {
         //Arrange
         var testCourse = createCourse();
 
-        JSONObject updateJson = new JSONObject();
-        updateJson.put("title", "newTitle");
-        HttpEntity<String> updateRequest = new HttpEntity<>(updateJson.toString(), headers);
+        UpdateCourseDto updateCourseDto = new UpdateCourseDto();
+        updateCourseDto.setTitle("NewTitle");
+        HttpEntity<UpdateCourseDto> updateRequest = new HttpEntity<>(updateCourseDto, headers);
 
         //Act
         var courseDto = restTemplate.exchange(baseUrl + "/courses/" + testCourse.getId(), HttpMethod.PATCH, updateRequest, CourseDto.class);
 
         //Assert
         assertEquals(HttpStatus.OK, courseDto.getStatusCode());
-        assertEquals(updateJson.get("title"), courseDto.getBody().getTitle());
-        assertEquals(updateJson.getString("title"), courseRepository.findById(testCourse.getId()).get().getTitle());
+        assertEquals(updateCourseDto.getTitle(), courseDto.getBody().getTitle());
+        assertEquals(updateCourseDto.getTitle(), courseRepository.findById(testCourse.getId()).get().getTitle());
     }
 
     @Test
@@ -142,16 +146,16 @@ class CourseControllerTest {
         //Arrange
         var testCourse = createCourse();
 
-        JSONObject updateJson = new JSONObject();
-        updateJson.put("title", "");
-        HttpEntity<String> updateRequest = new HttpEntity<>(updateJson.toString(), headers);
+        UpdateCourseDto updateCourseDto = new UpdateCourseDto();
+        updateCourseDto.setTitle("");
+        HttpEntity<UpdateCourseDto> updateRequest = new HttpEntity<>(updateCourseDto, headers);
 
         //Act
         var courseDto = restTemplate.exchange(baseUrl + "/courses/" + testCourse.getId(), HttpMethod.PATCH, updateRequest, CourseDto.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, courseDto.getStatusCode());
-        assertNotEquals(updateJson.getString("title"), courseRepository.findById(testCourse.getId()).get().getTitle());
+        assertNotEquals(updateCourseDto.getTitle(), courseRepository.findById(testCourse.getId()).get().getTitle());
     }
 
     @Test
@@ -160,17 +164,17 @@ class CourseControllerTest {
         //Arrange
         var testCourse = createCourse();
 
-        JSONObject updateJson = new JSONObject();
-        updateJson.put("description", "NewDescription");
-        HttpEntity<String> updateRequest = new HttpEntity<>(updateJson.toString(), headers);
+        UpdateCourseDto updateCourseDto = new UpdateCourseDto();
+        updateCourseDto.setDescription("New Description");
+        HttpEntity<UpdateCourseDto> updateRequest = new HttpEntity<>(updateCourseDto, headers);
 
         //Act
         var courseDto = restTemplate.exchange(baseUrl + "/courses/" + testCourse.getId(), HttpMethod.PATCH, updateRequest, CourseDto.class);
 
         //Assert
         assertEquals(HttpStatus.OK, courseDto.getStatusCode());
-        assertEquals(updateJson.get("description"), courseDto.getBody().getDescription());
-        assertEquals(updateJson.getString("description"), courseRepository.findById(testCourse.getId()).get().getDescription());
+        assertEquals(updateCourseDto.getDescription(), courseDto.getBody().getDescription());
+        assertEquals(updateCourseDto.getDescription(), courseRepository.findById(testCourse.getId()).get().getDescription());
     }
 
     @Test
@@ -179,16 +183,16 @@ class CourseControllerTest {
         //Arrange
         var testCourse = createCourse();
 
-        JSONObject updateJson = new JSONObject();
-        updateJson.put("description", "");
-        HttpEntity<String> updateRequest = new HttpEntity<>(updateJson.toString(), headers);
+        UpdateCourseDto updateCourseDto = new UpdateCourseDto();
+        updateCourseDto.setDescription("");
+        HttpEntity<UpdateCourseDto> updateRequest = new HttpEntity<>(updateCourseDto, headers);
 
         //Act
         var courseDto = restTemplate.exchange(baseUrl + "/courses/" + testCourse.getId(), HttpMethod.PATCH, updateRequest, CourseDto.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, courseDto.getStatusCode());
-        assertNotEquals(updateJson.getString("description"), courseRepository.findById(testCourse.getId()).get().getDescription());
+        assertNotEquals(updateCourseDto.getDescription(), courseRepository.findById(testCourse.getId()).get().getDescription());
     }
 
     @Test

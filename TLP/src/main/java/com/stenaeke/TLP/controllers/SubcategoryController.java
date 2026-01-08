@@ -18,10 +18,10 @@ public class SubcategoryController {
     private final SubcategoryService subcategoryService;
 
     @PostMapping
-    public ResponseEntity<SubcategoryDto> addSubcategory(@Valid @RequestBody CreateSubcategoryRequest createSubcategoryRequest,
+    public ResponseEntity<SubcategoryDto> addSubcategory(@Valid @RequestBody CreateSubcategoryDto createSubcategoryDto,
                                                          UriComponentsBuilder uriComponentsBuilder
     ) {
-        var subcategoryDto = subcategoryService.addSubcategoryToCourse(createSubcategoryRequest);
+        var subcategoryDto = subcategoryService.addSubcategoryToCourse(createSubcategoryDto);
         var uri = uriComponentsBuilder.path("/subcategories/{subcategoryId}").buildAndExpand(subcategoryDto.getId()).toUri(); //TODO:Double check
         return ResponseEntity.created(uri).body(subcategoryDto);
     }
@@ -40,8 +40,8 @@ public class SubcategoryController {
 
     @PatchMapping("/{subcategoryId}")
     public ResponseEntity<SubcategoryDto> updateSubcategory(@PathVariable long subcategoryId,
-                                                            @Valid @RequestBody UpdateSubcategoryRequest updateSubcategoryRequest){
-        var updatedSubcategoryDto = subcategoryService.updateSubcategory(subcategoryId,updateSubcategoryRequest);
+                                                            @Valid @RequestBody UpdateSubcategoryDto updateSubcategoryDto){
+        var updatedSubcategoryDto = subcategoryService.updateSubcategory(subcategoryId, updateSubcategoryDto);
         return ResponseEntity.ok(updatedSubcategoryDto);
     }
 

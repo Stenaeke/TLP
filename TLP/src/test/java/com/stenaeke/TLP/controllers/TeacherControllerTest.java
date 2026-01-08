@@ -45,7 +45,8 @@ class TeacherControllerTest {
 
     @Container
     @ServiceConnection
-    private static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:latest");
+    private static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:latest")
+            .withReuse(true);
 
     static {
         postgres.start();

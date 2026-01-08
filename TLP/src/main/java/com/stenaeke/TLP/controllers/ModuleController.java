@@ -1,8 +1,8 @@
 package com.stenaeke.TLP.controllers;
 
-import com.stenaeke.TLP.dtos.module.CreateModuleRequest;
+import com.stenaeke.TLP.dtos.module.CreateModuleDto;
 import com.stenaeke.TLP.dtos.module.ModuleDto;
-import com.stenaeke.TLP.dtos.module.UpdateModuleRequest;
+import com.stenaeke.TLP.dtos.module.UpdateModuleDto;
 import com.stenaeke.TLP.services.ModuleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +20,9 @@ public class ModuleController {
     private final ModuleService moduleService;
 
     @PostMapping
-    public ResponseEntity<ModuleDto> addModule(@Valid @RequestBody CreateModuleRequest createModuleRequest,
+    public ResponseEntity<ModuleDto> addModule(@Valid @RequestBody CreateModuleDto createModuleDto,
                                                UriComponentsBuilder uriComponentsBuilder) {
-        var moduleDto = moduleService.addModuleToSubcategory(createModuleRequest);
+        var moduleDto = moduleService.addModuleToSubcategory(createModuleDto);
         var uri = uriComponentsBuilder.path("/modules/{moduleId}").buildAndExpand(moduleDto.getId()).toUri();//TODO:Double check
         return ResponseEntity.created(uri).body(moduleDto);
     }
@@ -41,9 +41,9 @@ public class ModuleController {
 
     @PatchMapping("/{moduleId}")
     public ResponseEntity<ModuleDto> updateModule(@PathVariable long moduleId,
-                                                  @Valid @RequestBody UpdateModuleRequest updateModuleRequest) {
+                                                  @Valid @RequestBody UpdateModuleDto updateModuleDto) {
 
-        var updatedModuleDto = moduleService.updateModule(moduleId, updateModuleRequest);
+        var updatedModuleDto = moduleService.updateModule(moduleId, updateModuleDto);
         return ResponseEntity.ok(updatedModuleDto);
     }
 

@@ -3,6 +3,7 @@ package com.stenaeke.TLP.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 
 import java.time.OffsetDateTime;
 
@@ -22,7 +23,6 @@ public class Module {
 
     private String title;
 
-    @Lob
     private String content;
 
     private OffsetDateTime createdAt;

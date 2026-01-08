@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UpdateModuleRequest {
+public class UpdateModuleDto {
     @Size(min = 3, max = 255, message = "Title must be between 3 and 255 characters")
     private String title;
     private Boolean published;

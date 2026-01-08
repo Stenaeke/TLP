@@ -1,25 +1,14 @@
 package com.stenaeke.TLP.services;
 
 import com.stenaeke.TLP.domain.Course;
-import com.stenaeke.TLP.domain.Subcategory;
-import com.stenaeke.TLP.domain.Module;
 import com.stenaeke.TLP.dtos.course.*;
-import com.stenaeke.TLP.dtos.module.*;
-import com.stenaeke.TLP.dtos.subcategory.*;
-import com.stenaeke.TLP.exceptions.ResourceMismatchException;
 import com.stenaeke.TLP.exceptions.ResourceNotFoundException;
 import com.stenaeke.TLP.mappers.CourseMapper;
-import com.stenaeke.TLP.mappers.ModuleMapper;
-import com.stenaeke.TLP.mappers.SubcategoryMapper;
 import com.stenaeke.TLP.repositories.CourseRepository;
-import com.stenaeke.TLP.repositories.ModuleRepository;
-import com.stenaeke.TLP.repositories.SubcategoryRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,11 +42,11 @@ public class CourseService {
     }
 
     @Transactional
-    public CourseDto updateCourse(Long courseId, UpdateCourseRequest updateCourseRequest) {
+    public CourseDto updateCourse(Long courseId, UpdateCourseDto updateCourseDto) {
         var course = courseRepository.findById(courseId)
                 .orElseThrow(()-> new ResourceNotFoundException("course not found"));
 
-        courseMapper.updateCourseFromRequestDto(updateCourseRequest, course);
+        courseMapper.updateCourseFromRequestDto(updateCourseDto, course);
 
         courseRepository.save(course);
         return courseMapper.courseToCourseDto(course);

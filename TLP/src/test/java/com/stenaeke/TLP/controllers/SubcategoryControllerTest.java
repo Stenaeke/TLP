@@ -3,9 +3,9 @@ package com.stenaeke.TLP.controllers;
 import com.stenaeke.TLP.domain.Course;
 import com.stenaeke.TLP.domain.Subcategory;
 import com.stenaeke.TLP.dtos.auth.TokenResponse;
-import com.stenaeke.TLP.dtos.subcategory.CreateSubcategoryRequest;
+import com.stenaeke.TLP.dtos.subcategory.CreateSubcategoryDto;
 import com.stenaeke.TLP.dtos.subcategory.SubcategoryDto;
-import com.stenaeke.TLP.dtos.subcategory.UpdateSubcategoryRequest;
+import com.stenaeke.TLP.dtos.subcategory.UpdateSubcategoryDto;
 import com.stenaeke.TLP.dtos.teacher.TeacherDto;
 import com.stenaeke.TLP.repositories.CourseRepository;
 import com.stenaeke.TLP.repositories.SubcategoryRepository;
@@ -44,13 +44,15 @@ public class SubcategoryControllerTest {
     HttpHeaders headers;
     String token;
     String baseUrl;
+    Course testCourse;
 
     @LocalServerPort
     private int port;
 
     @Container
     @ServiceConnection
-    private static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:latest");
+    private static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:latest")
+            .withReuse(true);;
 
     static {
         postgres.start();
@@ -59,6 +61,7 @@ public class SubcategoryControllerTest {
     @BeforeEach
     void setUp() throws JSONException {
         restTemplate = new TestRestTemplate();
+        testCourse = createCourse();
 
         headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -89,13 +92,11 @@ public class SubcategoryControllerTest {
     @DisplayName("addSubcategory creates subcategory and associates with course and returns status 201")
     void testAddSubcategory_whenValidDetailsProvided_returnsHttpStatus201(){
         //Arrange
-        var testCourse = createCourse();
-
-        CreateSubcategoryRequest requestDto = new CreateSubcategoryRequest();
+        CreateSubcategoryDto requestDto = new CreateSubcategoryDto();
         requestDto.setCourseId(testCourse.getId());
         requestDto.setTitle("Behavioral psychology");
         requestDto.setDescription("Behavioral psychology is the scientific study of how observable behaviors are learned and influenced by interactions with the environment.");
-        HttpEntity<CreateSubcategoryRequest> request = new HttpEntity<>(requestDto, headers);
+        HttpEntity<CreateSubcategoryDto> request = new HttpEntity<>(requestDto, headers);
 
         //Act
         var subcategoryResponse = restTemplate.postForEntity(baseUrl + "/subcategories", request, SubcategoryDto.class);
@@ -113,13 +114,11 @@ public class SubcategoryControllerTest {
     @DisplayName("addSubcategory with empty name returns status 400")
     void testAddSubcategory_whenEmptyNameProvided_returnsHttpStatus400(){
         //Arrange
-        var testCourse = createCourse();
-
-        CreateSubcategoryRequest requestDto = new CreateSubcategoryRequest();
+        CreateSubcategoryDto requestDto = new CreateSubcategoryDto();
         requestDto.setCourseId(testCourse.getId());
         requestDto.setTitle("");
         requestDto.setDescription("Behavioral psychology is the scientific study of how observable behaviors are learned and influenced by interactions with the environment.");
-        HttpEntity<CreateSubcategoryRequest> request = new HttpEntity<>(requestDto, headers);
+        HttpEntity<CreateSubcategoryDto> request = new HttpEntity<>(requestDto, headers);
 
         //Act
         var subcategoryResponse = restTemplate.postForEntity(baseUrl + "/subcategories", request, SubcategoryDto.class);
@@ -130,17 +129,46 @@ public class SubcategoryControllerTest {
     }
 
     @Test
+    @DisplayName("getSubcategory returns requested subcategory with status 200")
+    void testGetSubcategory_whenValidDetailsProvided_returnsHttpStatus200() {
+        //Arrange
+        var testSubcategory = createSubcategory(testCourse);
+        HttpEntity<String> newSubcategoryRequest = new HttpEntity<>(headers);
+
+        //Act
+        var response = restTemplate.exchange(baseUrl + "/subcategories/" + testSubcategory.getId(), HttpMethod.GET, newSubcategoryRequest, SubcategoryDto.class);
+
+        //Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(testSubcategory.getTitle(), response.getBody().getTitle());
+        assertEquals(testSubcategory.getTitle(), subcategoryRepository.findById(testSubcategory.getId()).get().getTitle());
+    }
+
+    @Test
+    @DisplayName("getSubcategory with invalid id returns 404 status")
+    void testGetSubcategory_whenInvalidIdProvided_returnsHttpStatus404() {
+        //Arrange
+        HttpEntity<String> newSubcategoryRequest = new HttpEntity<>(headers);
+
+        //Act
+        var response = restTemplate.exchange(baseUrl + "/subcategories/" + Long.MAX_VALUE, HttpMethod.GET, newSubcategoryRequest, String.class);
+
+        //Assert
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertTrue(subcategoryRepository.findAll().isEmpty());
+    }
+
+    @Test
     @DisplayName("getSubcategoriesForCourse returns correct number of subcategories for given course with status 200")
     void testGetSubcategoriesForCourse_whenGetRequest_returnsCorrectNumberOfSubcategoriesWithHttpStatus200() {
         //Arrange
-        var testCourse = createCourse();
         var testSubcategory1 = createSubcategory(testCourse);
         var testSubcategory2 = createSubcategory(testCourse);
 
         HttpEntity<String> getSubcategoriesRequest = new HttpEntity<>(headers);
 
         //Act
-        var response = restTemplate.exchange(baseUrl + "/subcategories?courseId=" + testCourse.getId(), HttpMethod.GET, getSubcategoriesRequest, new  ParameterizedTypeReference<List<SubcategoryDto>>() {});
+        var response = restTemplate.exchange(baseUrl + "/subcategories?courseId=" + testCourse.getId(), HttpMethod.GET, getSubcategoriesRequest, List.class);
 
         //Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -152,7 +180,6 @@ public class SubcategoryControllerTest {
     @DisplayName("getSubcategoriesForCourse returns correct subcategories for given course with status 200")
     void testGetSubcategoriesForCourse_whenGetRequest_returnsCorrectSubcategoriesWithHttpStatus200() {
         //Arrange
-        var testCourse = createCourse();
         var testSubcategory1 = createSubcategory(testCourse);
         var testSubcategory2 = createSubcategory(testCourse);
 
@@ -170,90 +197,71 @@ public class SubcategoryControllerTest {
     }
 
     @Test
-    @DisplayName("getSubcategory returns requested subcategory with status 200")
-    void testGetSubcategory_whenValidDetailsProvided_returnsHttpStatus200() {
+    @DisplayName("getSubcategoriesForCourse with invalid courseId returns http status 404")
+    void testGetSubcategoriesForCourse_whenInvalidCourseId_returnsHttpStatus404() {
         //Arrange
-        var testCourse = createCourse();
-        var testSubcategory = createSubcategory(testCourse);
+        var testSubcategory1 = createSubcategory(testCourse);
+        var testSubcategory2 = createSubcategory(testCourse);
 
-        HttpEntity<String> newSubcategoryRequest = new HttpEntity<>(headers);
-
+        HttpEntity<String> getSubcategoriesRequest = new HttpEntity<>(headers);
         //Act
-        var response = restTemplate.exchange(baseUrl + "/subcategories/" + testSubcategory.getId(), HttpMethod.GET, newSubcategoryRequest, SubcategoryDto.class);
+        var response = restTemplate.exchange(baseUrl + "/subcategories?courseId=" + Long.MAX_VALUE, HttpMethod.GET, getSubcategoriesRequest, List.class);
 
         //Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(testSubcategory.getTitle(), response.getBody().getTitle());
-        assertEquals(testSubcategory.getTitle(), subcategoryRepository.findById(testSubcategory.getId()).get().getTitle());
+        assertEquals(0, response.getBody().size());
     }
 
-    @Test
-    @DisplayName("getSubcategory with invalid id returns 404 status")
-    void testGetSubcategory_whenInvalidIdProvided_returnsHttpStatus404() {
-        //Arrange
-        HttpEntity<String> newSubcategoryRequest = new HttpEntity<>(headers);
-        var testCourse = createCourse();
-
-        //Act
-        var response = restTemplate.exchange(baseUrl + "/subcategories/" + Long.MAX_VALUE, HttpMethod.GET, newSubcategoryRequest, String.class);
-
-        //Assert
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertTrue(subcategoryRepository.findAll().isEmpty());
-    }
 
     @Test
     @DisplayName("updateSubcategoryTitle with valid new title updates and returns updated subcategory dto with status code 200")
     void testUpdateSubcategoryTitle_whenValidDetailsProvided_returnsHttpStatus200()  {
         //Arrange
-        var testCourse = createCourse();
         var testSubcategory = createSubcategory(testCourse);
 
-        UpdateSubcategoryRequest updateSubcategoryRequest = new UpdateSubcategoryRequest();
-        updateSubcategoryRequest.setTitle("newTitle");
+        UpdateSubcategoryDto updateSubcategoryDto = new UpdateSubcategoryDto();
+        updateSubcategoryDto.setTitle("newTitle");
 
-        HttpEntity<UpdateSubcategoryRequest> request = new HttpEntity<>(updateSubcategoryRequest, headers);
+        HttpEntity<UpdateSubcategoryDto> request = new HttpEntity<>(updateSubcategoryDto, headers);
 
         //Act
         var response = restTemplate.exchange(baseUrl + "/subcategories/" + testSubcategory.getId(), HttpMethod.PATCH, request, SubcategoryDto.class);
 
         //Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(updateSubcategoryRequest.getTitle(), response.getBody().getTitle());
-        assertEquals(updateSubcategoryRequest.getTitle(), subcategoryRepository.findById(testSubcategory.getId()).get().getTitle());
+        assertEquals(updateSubcategoryDto.getTitle(), response.getBody().getTitle());
+        assertEquals(updateSubcategoryDto.getTitle(), subcategoryRepository.findById(testSubcategory.getId()).get().getTitle());
     }
 
     @Test
     @DisplayName("updateSubcategoryTitle with invalid new title returns status 400")
     void testUpdateSubcategoryTitle_whenInvalidDetailsProvided_returnsHttpStatus400()  {
         //Arrange
-        var testCourse = createCourse();
         var testSubcategory = createSubcategory(testCourse);
 
-        UpdateSubcategoryRequest updateSubcategoryRequest = new UpdateSubcategoryRequest();
-        updateSubcategoryRequest.setTitle("");
+        UpdateSubcategoryDto updateSubcategoryDto = new UpdateSubcategoryDto();
+        updateSubcategoryDto.setTitle("");
 
-        HttpEntity<UpdateSubcategoryRequest> request = new HttpEntity<>(updateSubcategoryRequest, headers);
+        HttpEntity<UpdateSubcategoryDto> request = new HttpEntity<>(updateSubcategoryDto, headers);
 
         //Act
         var response = restTemplate.exchange(baseUrl + "/subcategories/" + testSubcategory.getId(), HttpMethod.PATCH, request, SubcategoryDto.class);
 
         //Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertNotEquals(updateSubcategoryRequest.getTitle(), subcategoryRepository.findById(testSubcategory.getId()).get().getTitle());
+        assertNotEquals(updateSubcategoryDto.getTitle(), subcategoryRepository.findById(testSubcategory.getId()).get().getTitle());
     }
 
     @Test
     @DisplayName("updateSubcategoryTitle with invalid subcategory id returns status 404")
     void testUpdateSubcategoryTitle_whenInvalidSubcategoryId_returnsHttpStatus404()  {
         //Arrange
-        var testCourse = createCourse();
         var testSubcategory = createSubcategory(testCourse);
 
-        UpdateSubcategoryRequest updateSubcategoryRequest = new UpdateSubcategoryRequest();
-        updateSubcategoryRequest.setTitle("NewTitle");
+        UpdateSubcategoryDto updateSubcategoryDto = new UpdateSubcategoryDto();
+        updateSubcategoryDto.setTitle("NewTitle");
 
-        HttpEntity<UpdateSubcategoryRequest> request = new HttpEntity<>(updateSubcategoryRequest, headers);
+        HttpEntity<UpdateSubcategoryDto> request = new HttpEntity<>(updateSubcategoryDto, headers);
 
         //Act
         var response = restTemplate.exchange(baseUrl + "/subcategories/" + Long.MAX_VALUE, HttpMethod.PATCH, request, SubcategoryDto.class);
@@ -266,35 +274,33 @@ public class SubcategoryControllerTest {
     @DisplayName("updateSubcategoryDescription returns updated subcategory with status 200")
     void testUpdateSubcategoryDescription_whenValidDetailsProvided_UpdatesAndReturnsHttpStatus200()  {
         //Arrange
-        var testCourse = createCourse();
         var testSubcategory = createSubcategory(testCourse);
 
-        UpdateSubcategoryRequest updateSubcategoryRequest = new UpdateSubcategoryRequest();
-        updateSubcategoryRequest.setDescription("New description");
+        UpdateSubcategoryDto updateSubcategoryDto = new UpdateSubcategoryDto();
+        updateSubcategoryDto.setDescription("New description");
 
-        HttpEntity<UpdateSubcategoryRequest> request = new HttpEntity<>(updateSubcategoryRequest, headers);
+        HttpEntity<UpdateSubcategoryDto> request = new HttpEntity<>(updateSubcategoryDto, headers);
 
         //Act
         var response = restTemplate.exchange(baseUrl + "/subcategories/" + testSubcategory.getId(), HttpMethod.PATCH, request, SubcategoryDto.class);
 
         //Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(updateSubcategoryRequest.getDescription(), response.getBody().getDescription());
-        assertEquals(updateSubcategoryRequest.getDescription(), subcategoryRepository.findById(testSubcategory.getId()).get().getDescription());
+        assertEquals(updateSubcategoryDto.getDescription(), response.getBody().getDescription());
+        assertEquals(updateSubcategoryDto.getDescription(), subcategoryRepository.findById(testSubcategory.getId()).get().getDescription());
     }
 
     @Test
     @DisplayName("updateSubcategoryCourse returns updated subcategory with status 200")
     void testUpdateSubcategoryCourse_whenValidDetailsProvided_UpdatesAndReturnsHttpStatus200()  {
         //Arrange
-        var testCourse1 = createCourse();
         var testCourse2 = createCourse();
-        var testSubcategory = createSubcategory(testCourse1);
+        var testSubcategory = createSubcategory(testCourse);
 
-        UpdateSubcategoryRequest updateSubcategoryRequest = new UpdateSubcategoryRequest();
-        updateSubcategoryRequest.setCourseId(testCourse2.getId());
+        UpdateSubcategoryDto updateSubcategoryDto = new UpdateSubcategoryDto();
+        updateSubcategoryDto.setCourseId(testCourse2.getId());
 
-        HttpEntity<UpdateSubcategoryRequest> request = new HttpEntity<>(updateSubcategoryRequest, headers);
+        HttpEntity<UpdateSubcategoryDto> request = new HttpEntity<>(updateSubcategoryDto, headers);
 
         //Act
         var response = restTemplate.exchange(baseUrl + "/subcategories/" + testSubcategory.getId(), HttpMethod.PATCH, request, SubcategoryDto.class);
@@ -309,48 +315,45 @@ public class SubcategoryControllerTest {
     @DisplayName("updateSubcategoryCourse with invalid new course id returns status 404")
     void testUpdateSubcategoryCourse_whenInvalidNewCourseDetailsProvided_returnsHttpStatus404()  {
         //Arrange
-        var testCourse1 = createCourse();
-        var testSubcategory = createSubcategory(testCourse1);
+        var testSubcategory = createSubcategory(testCourse);
 
-        UpdateSubcategoryRequest updateSubcategoryRequest = new UpdateSubcategoryRequest();
-        updateSubcategoryRequest.setCourseId(Long.MAX_VALUE);
+        UpdateSubcategoryDto updateSubcategoryDto = new UpdateSubcategoryDto();
+        updateSubcategoryDto.setCourseId(Long.MAX_VALUE);
 
-        HttpEntity<UpdateSubcategoryRequest> request = new HttpEntity<>(updateSubcategoryRequest, headers);
+        HttpEntity<UpdateSubcategoryDto> request = new HttpEntity<>(updateSubcategoryDto, headers);
 
         //Act
         var response = restTemplate.exchange(baseUrl + "/subcategories/" + testSubcategory.getId(), HttpMethod.PATCH, request, SubcategoryDto.class);
 
         //Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNotEquals(updateSubcategoryRequest.getCourseId(), subcategoryRepository.findById(testSubcategory.getId()).get().getCourse());
+        assertNotEquals(updateSubcategoryDto.getCourseId(), subcategoryRepository.findById(testSubcategory.getId()).get().getCourse());
     }
 
     @Test
     @DisplayName("updateSubcategoryCourse with invalid subcategory id returns status 404")
     void testUpdateSubcategoryCourse_whenInvalidSubcategoryDetailsProvided_returnsHttpStatus404()  {
         //Arrange
-        var testCourse1 = createCourse();
         var testCourse2 = createCourse();
-        var testSubcategory = createSubcategory(testCourse1);
+        var testSubcategory = createSubcategory(testCourse);
 
-        UpdateSubcategoryRequest updateSubcategoryRequest = new UpdateSubcategoryRequest();
-        updateSubcategoryRequest.setCourseId(testCourse2.getId());
+        UpdateSubcategoryDto updateSubcategoryDto = new UpdateSubcategoryDto();
+        updateSubcategoryDto.setCourseId(testCourse2.getId());
 
-        HttpEntity<UpdateSubcategoryRequest> request = new HttpEntity<>(updateSubcategoryRequest, headers);
+        HttpEntity<UpdateSubcategoryDto> request = new HttpEntity<>(updateSubcategoryDto, headers);
 
         //Act
         var response = restTemplate.exchange(baseUrl + "/subcategories/" + Long.MAX_VALUE, HttpMethod.PATCH, request, SubcategoryDto.class);
 
         //Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals(testCourse1.getId(), subcategoryRepository.findById(testSubcategory.getId()).get().getCourse().getId());
+        assertEquals(testCourse.getId(), subcategoryRepository.findById(testSubcategory.getId()).get().getCourse().getId());
     }
 
     @Test
     @DisplayName("deleteSubcategory with non-existing subcategory id returns 404")
     void testDeleteSubcategory_whenInvalidDetailsProvided_returnsHttpStatus404() {
         //Arrange
-        var testCourse = createCourse();
         var testSubcategory = createSubcategory(testCourse);
 
         HttpEntity<String> deleteSubcategoryRequest = new HttpEntity<>(headers);
@@ -367,7 +370,6 @@ public class SubcategoryControllerTest {
     @DisplayName("deleteSubcategory deletes subcategory and returns 200")
     void testDeleteSubcategory_whenValidDetailsProvided_returnsHttpStatus200() {
         //Arrange
-        var testCourse = createCourse();
         var testSubcategory = createSubcategory(testCourse);
 
         HttpEntity<String> deleteSubcategoryRequest = new HttpEntity<>(headers);

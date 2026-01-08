@@ -27,13 +27,13 @@ public class ModuleService {
 
 
     @Transactional
-    public ModuleDto addModuleToSubcategory(CreateModuleRequest createModuleRequest) {
-        var subcategoryReference = entityManager.getReference(Subcategory.class, createModuleRequest.getSubcategoryId());
+    public ModuleDto addModuleToSubcategory(CreateModuleDto createModuleDto) {
+        var subcategoryReference = entityManager.getReference(Subcategory.class, createModuleDto.getSubcategoryId());
 
         Module module = new Module();
-        module.setTitle(createModuleRequest.getTitle());
-        module.setContent(createModuleRequest.getContent());
-        module.setPublished(createModuleRequest.getPublished());
+        module.setTitle(createModuleDto.getTitle());
+        module.setContent(createModuleDto.getContent());
+        module.setPublished(createModuleDto.getPublished());
         module.setSubcategory(subcategoryReference);
         module.setCreatedAt(OffsetDateTime.now());
         module.setUpdatedAt(OffsetDateTime.now());
@@ -56,18 +56,18 @@ public class ModuleService {
     }
 
     @Transactional
-    public ModuleDto updateModule(Long moduleId, @Valid UpdateModuleRequest updateModuleRequest) {
+    public ModuleDto updateModule(Long moduleId, @Valid UpdateModuleDto updateModuleDto) {
         try {
             var module = moduleRepository.findById(moduleId)
                     .orElseThrow(() -> new ResourceNotFoundException("module not found"));
 
-            moduleMapper.updateModuleFromRequest(updateModuleRequest, module);
+            moduleMapper.updateModuleFromRequest(updateModuleDto, module);
 
             module.setUpdatedAt(OffsetDateTime.now());
             moduleRepository.save(module);
             return moduleMapper.moduleToModuleDto(module);
         } catch (DataIntegrityViolationException e) {
-            throw new ResourceNotFoundException("Subcategory not found with id: " + updateModuleRequest.getSubcategoryId());
+            throw new ResourceNotFoundException("Subcategory not found with id: " + updateModuleDto.getSubcategoryId());
         }
     }
 
