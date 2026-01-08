@@ -38,19 +38,19 @@ public class SubcategoryService {
     }
 
     @Transactional(readOnly = true)
-    public SubcategoryDto getSubcategory(long subcategoryId) {
+    public SubcategoryDto getSubcategory(Long subcategoryId) {
 
         return subcategoryRepository.findById(subcategoryId).map(subcategoryMapper::subcategoryToSubcategoryDto)
                 .orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
     }
 
     @Transactional(readOnly = true)
-    public List<SubcategoryDto> getAllSubcategoriesForCourse(long courseId) {
+    public List<SubcategoryDto> getAllSubcategoriesForCourse(Long courseId) {
         return subcategoryRepository.findByCourseId(courseId).stream().map(subcategoryMapper::subcategoryToSubcategoryDto).collect(Collectors.toList());
     }
 
     @Transactional
-    public SubcategoryDto updateSubcategory(long subcategoryId, UpdateSubcategoryDto updateSubcategoryDto) {
+    public SubcategoryDto updateSubcategory(Long subcategoryId, UpdateSubcategoryDto updateSubcategoryDto) {
         try {
             var subcategory = subcategoryRepository.findById(subcategoryId)
                     .orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
@@ -70,7 +70,7 @@ public class SubcategoryService {
     }
 
     @Transactional
-    public void deleteSubcategory(long subcategoryId) {
+    public void deleteSubcategory(Long subcategoryId) {
         var subcategory = subcategoryRepository.findById(subcategoryId)
                 .orElseThrow(()-> new ResourceNotFoundException("subcategory not found"));
 

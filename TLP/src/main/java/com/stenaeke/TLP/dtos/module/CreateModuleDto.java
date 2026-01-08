@@ -14,6 +14,6 @@ public class CreateModuleDto {
     @NotNull
     private Boolean published;
     @NotNull
-    private long subcategoryId;
+    private Long subcategoryId;
 }
 

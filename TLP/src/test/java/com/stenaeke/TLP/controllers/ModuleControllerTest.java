@@ -6,6 +6,7 @@ import com.stenaeke.TLP.domain.Module;
 import com.stenaeke.TLP.dtos.auth.TokenResponse;
 import com.stenaeke.TLP.dtos.module.CreateModuleDto;
 import com.stenaeke.TLP.dtos.module.ModuleDto;
+import com.stenaeke.TLP.dtos.module.UpdateModuleDto;
 import com.stenaeke.TLP.dtos.teacher.TeacherDto;
 import com.stenaeke.TLP.repositories.CourseRepository;
 import com.stenaeke.TLP.repositories.ModuleRepository;
@@ -27,8 +28,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
@@ -179,6 +179,142 @@ public class ModuleControllerTest {
         //Assert
         assertEquals(HttpStatus.OK, moduleListResponse.getStatusCode());
         assertEquals(moduleListResponse.getBody().size(), moduleRepository.findBySubcategoryId(testsubcategory.getId()).size());
+    }
+
+    @Test
+    @DisplayName("updateModule with valid new title updates and returns updated module dto with status code 200")
+    void testUpdateModule_whenValidNewTitleProvided_returnsHttpStatus200() {
+        //Arrange
+        UpdateModuleDto updateModuleDto = new UpdateModuleDto();
+        updateModuleDto.setTitle("New title");
+        HttpEntity<UpdateModuleDto> request = new  HttpEntity<>(updateModuleDto, headers);
+        Module testModule = createModule(testsubcategory);
+
+        //Act
+        var updateModuleResponse = restTemplate.exchange(baseUrl + "/modules/" + testModule.getId(), HttpMethod.PATCH, request, ModuleDto.class);
+
+        //Assert
+        assertEquals(HttpStatus.OK, updateModuleResponse.getStatusCode());
+        assertEquals(moduleRepository.findById(testModule.getId()).get().getTitle(), updateModuleResponse.getBody().getTitle());
+    }
+
+    @Test
+    @DisplayName("updateModule with valid new published updates and returns updated module dto with status code 200")
+    void testUpdateModule_whenValidNewPublishedProvided_returnsHttpStatus200() {
+        //Arrange
+        UpdateModuleDto updateModuleDto = new UpdateModuleDto();
+        updateModuleDto.setPublished(false);
+        HttpEntity<UpdateModuleDto> request = new  HttpEntity<>(updateModuleDto, headers);
+        Module testModule = createModule(testsubcategory);
+
+        //Act
+        var updateModuleResponse = restTemplate.exchange(baseUrl + "/modules/" + testModule.getId(), HttpMethod.PATCH, request, ModuleDto.class);
+
+        //Assert
+        assertEquals(HttpStatus.OK, updateModuleResponse.getStatusCode());
+        assertEquals(moduleRepository.findById(testModule.getId()).get().getPublished(), updateModuleResponse.getBody().getPublished());
+    }
+
+    @Test
+    @DisplayName("updateModule with valid new content updates and returns updated module dto with status code 200")
+    void testUpdateModule_whenValidNewContentProvided_returnsHttpStatus200() {
+        //Arrange
+        UpdateModuleDto updateModuleDto = new UpdateModuleDto();
+        updateModuleDto.setContent("The album is a sampler of material from the first four Kraftwerk albums – Kraftwerk, Kraftwerk 2, Ralf und Florian, Autobahn – and includes some versions of tracks that " +
+                "had been edited down for release on singles, such as \"Autobahn\", as well as simple excerpts from longer album tracks, such as \"Kling-Klang\". Only the pair of tracks from the Ralf und Florian " +
+                "album, \"Tongebirge\" and \"Kristallo\", are entirely free of cuts.\n" + "Track selection was by Alan Cowderoy (later an A&R manager at Stiff Records) and sound engineering is credited to Steve Brown, " +
+                "though it is unclear if they created the edited versions of the two tracks released as singles. The three-minute version of \"Autobahn\" (edited down from an original album length of 22:30) is the same as " +
+                "the three-minute UK single mix, which had been a top 20 hit in the UK. A different 3:28 edit, released in 1974, received considerable airplay in the US. \"Comet Melody 2\" failed to chart.\n" +
+                "The album was issued on vinyl, 8-Track and cassette and deleted in 1980.");
+        HttpEntity<UpdateModuleDto> request = new  HttpEntity<>(updateModuleDto, headers);
+        Module testModule = createModule(testsubcategory);
+
+        //Act
+        var updateModuleResponse = restTemplate.exchange(baseUrl + "/modules/" + testModule.getId(), HttpMethod.PATCH, request, ModuleDto.class);
+
+        //Assert
+        assertEquals(HttpStatus.OK, updateModuleResponse.getStatusCode());
+        assertEquals(moduleRepository.findById(testModule.getId()).get().getContent(), updateModuleResponse.getBody().getContent());
+    }
+
+    @Test
+    @DisplayName("updateModule with valid new subcategory updates and returns updated module dto with status code 200")
+    void testUpdateModule_whenValidNewSubcategoryProvided_returnsHttpStatus200() {
+        //Arrange
+        Subcategory subcategory2 = createSubcategory(testcourse);
+        UpdateModuleDto updateModuleDto = new UpdateModuleDto();
+        updateModuleDto.setSubcategoryId(subcategory2.getId());
+        HttpEntity<UpdateModuleDto> request = new  HttpEntity<>(updateModuleDto, headers);
+        Module testModule = createModule(testsubcategory);
+
+        //Act
+        var updateModuleResponse = restTemplate.exchange(baseUrl + "/modules/" + testModule.getId(), HttpMethod.PATCH, request, ModuleDto.class);
+
+        //Assert
+        assertEquals(HttpStatus.OK, updateModuleResponse.getStatusCode());
+        assertEquals(moduleRepository.findById(testModule.getId()).get().getSubcategory().getId(), updateModuleResponse.getBody().getSubcategoryId());
+    }
+
+    @Test
+    @DisplayName("updateModule with invalid new title updates and returns updated module dto with status code 400")
+    void testUpdateModule_whenInvalidNewTitleProvided_returnsHttpStatus400() {
+        //Arrange
+        UpdateModuleDto updateModuleDto = new UpdateModuleDto();
+        updateModuleDto.setTitle(" ");
+        HttpEntity<UpdateModuleDto> request = new  HttpEntity<>(updateModuleDto, headers);
+        Module testModule = createModule(testsubcategory);
+
+        //Act
+        var updateModuleResponse = restTemplate.exchange(baseUrl + "/modules/" + testModule.getId(), HttpMethod.PATCH, request, ModuleDto.class);
+
+        //Assert
+        assertEquals(HttpStatus.BAD_REQUEST, updateModuleResponse.getStatusCode());
+        assertNotEquals(moduleRepository.findById(testModule.getId()).get().getTitle(), updateModuleDto.getTitle());
+    }
+
+    @Test
+    @DisplayName("updateModule with invalid new Subcategory updates and returns updated module dto with status code 400")
+    void testUpdateModule_whenInvalidNewSubcategoryProvided_returnsHttpStatus400() {
+        //Arrange
+        UpdateModuleDto updateModuleDto = new UpdateModuleDto();
+        updateModuleDto.setSubcategoryId(Long.MAX_VALUE);
+        HttpEntity<UpdateModuleDto> request = new  HttpEntity<>(updateModuleDto, headers);
+        Module testModule = createModule(testsubcategory);
+
+        //Act
+        var updateModuleResponse = restTemplate.exchange(baseUrl + "/modules/" + testModule.getId(), HttpMethod.PATCH, request, ModuleDto.class);
+
+        //Assert
+        assertEquals(HttpStatus.NOT_FOUND, updateModuleResponse.getStatusCode());
+        assertNotEquals(moduleRepository.findById(testModule.getId()).get().getSubcategory().getId(), updateModuleDto.getSubcategoryId());
+    }
+
+    @Test
+    @DisplayName("deleteModule with valid module id provided deletes module and returns status code 204")
+    void testDeleteModule_whenValidModuleIdProvided_returnsHttpStatus204() {
+        //Arrange
+        HttpEntity<Void> request = new  HttpEntity<>(headers);
+        Module testModule = createModule(testsubcategory);
+
+        //Act
+        var deleteModuleResponse = restTemplate.exchange(baseUrl + "/modules/" + testModule.getId(), HttpMethod.DELETE, request, Void.class);
+
+        //Assert
+        assertEquals(HttpStatus.NO_CONTENT, deleteModuleResponse.getStatusCode());
+        assertFalse(moduleRepository.findById(testModule.getId()).isPresent());
+    }
+
+    @Test
+    @DisplayName("deleteModule with valid module id provided deletes module and returns status code 204")
+    void testDeleteModule_whenInvalidModuleIdProvided_returnsHttpStatus404() {
+        //Arrange
+        HttpEntity<Void> request = new  HttpEntity<>(headers);
+
+        //Act
+        var deleteModuleResponse = restTemplate.exchange(baseUrl + "/modules/" + Long.MAX_VALUE, HttpMethod.DELETE, request, Void.class);
+
+        //Assert
+        assertEquals(HttpStatus.NOT_FOUND, deleteModuleResponse.getStatusCode());
     }
 
 

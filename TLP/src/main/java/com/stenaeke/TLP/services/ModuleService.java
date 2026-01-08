@@ -1,5 +1,6 @@
 package com.stenaeke.TLP.services;
 
+import com.stenaeke.TLP.domain.Course;
 import com.stenaeke.TLP.domain.Module;
 import com.stenaeke.TLP.domain.Subcategory;
 import com.stenaeke.TLP.dtos.module.*;
@@ -63,8 +64,13 @@ public class ModuleService {
 
             moduleMapper.updateModuleFromRequest(updateModuleDto, module);
 
+            if (updateModuleDto.getSubcategoryId() != null) {
+                Subcategory SubcategoryRef = entityManager.getReference(Subcategory.class, updateModuleDto.getSubcategoryId());
+                module.setSubcategory(SubcategoryRef);
+            }
+
             module.setUpdatedAt(OffsetDateTime.now());
-            moduleRepository.save(module);
+            moduleRepository.saveAndFlush(module);
             return moduleMapper.moduleToModuleDto(module);
         } catch (DataIntegrityViolationException e) {
             throw new ResourceNotFoundException("Subcategory not found with id: " + updateModuleDto.getSubcategoryId());

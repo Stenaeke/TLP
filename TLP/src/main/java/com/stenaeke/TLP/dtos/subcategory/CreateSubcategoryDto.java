@@ -12,5 +12,5 @@ public class CreateSubcategoryDto {
     private String title;
     private String description;
     @NotNull
-    private long courseId;
+    private Long courseId;
 }

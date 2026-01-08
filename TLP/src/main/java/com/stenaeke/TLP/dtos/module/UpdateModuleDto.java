@@ -10,5 +10,5 @@ public class UpdateModuleDto {
     private Boolean published;
     @Size(min = 3, message = "Content must be at least 3 characters")
     private String content;
-    private long subcategoryId;
+    private Long subcategoryId;
 }

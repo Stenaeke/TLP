@@ -9,6 +9,7 @@ public class ModuleDto {
     private Long id;
     private String title;
     private String content;
+    private Boolean published;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
     private Long subcategoryId;
